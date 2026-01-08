@@ -46,8 +46,10 @@ class GameManager {
             level: document.getElementById('level-display')
         };
         
-        // API URL
-        this.API_URL = 'http://localhost:3001/api';
+        // API URL - utilise l'URL de production sur Vercel ou localhost en dev
+        this.API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3001/api'
+            : '/api';
 
         // Registry des mini-jeux
         this.gamesRegistry = {};
