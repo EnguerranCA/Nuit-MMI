@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pose Wall - Match the Pose Game</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- p5.js -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+    <!-- ml5.js for body pose detection -->
+    <script src="https://unpkg.com/ml5@1/dist/ml5.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-overlay">
+            <div id="score-display">Score: <span id="score">0</span></div>
+            <div id="level-display">Level: <span id="level">1</span></div>
+            <div id="lives-display">Lives: <span id="lives">3</span></div>
+        </div>
+        <div id="status-display">Loading pose detection...</div>
+        <div id="canvas-container"></div>
+        <div id="instructions">
+            <h2>POSE WALL</h2>
+            <p>Match the pose shown in the approaching wall to pass through.</p>
+            <p>Your body is tracked via webcam. Strike the pose before the wall reaches you.</p>
+            <div id="camera-status">
+                <p id="pose-status">Initializing camera...</p>
+                <button id="camera-btn" class="hidden">Enable Camera</button>
+                <button id="start-btn" class="hidden">Start Game</button>
+            </div>
+        </div>
+    </div>
+    <script src="sketch.js"></script>
+</body>
+</html>
