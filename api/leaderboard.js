@@ -1,4 +1,4 @@
-import { getLeaderboard } from './_db.js';
+import { getLeaderboard } from './db.js';
 
 export default async function handler(req, res) {
     // CORS headers

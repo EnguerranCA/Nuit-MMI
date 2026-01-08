@@ -1,4 +1,4 @@
-import { getPlayerRank } from './_db.js';
+import { getPlayerRank } from './db.js';
 
 export default async function handler(req, res) {
     // CORS headers

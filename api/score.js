@@ -1,4 +1,4 @@
-import { saveScore } from './_db.js';
+import { saveScore } from './db.js';
 
 export default async function handler(req, res) {
     // CORS headers
