@@ -52,7 +52,7 @@ class GameManager {
      * Initialisation du GameManager
      */
     async init() {
-        console.log('🎮 GameManager - Initialisation...');
+        console.log('GameManager - Initialisation...');
         
         // Chargement des mini-jeux
         await this.loadGames();
@@ -225,8 +225,8 @@ class GameManager {
     /**
      * Fin du jeu en cours
      */
-    endCurrentGame(finalScore) {
-        console.log(`🏁 Fin du jeu. Score: ${finalScore}`);
+    endCurrentGame(finalScore, reason = 'completed') {
+        console.log(`Fin du jeu. Score: ${finalScore}, Raison: ${reason}`);
         
         if (this.state.currentGame) {
             this.state.currentGame.cleanup();
@@ -234,9 +234,14 @@ class GameManager {
         }
 
         // Vérifier s'il y a d'autres jeux dans la séquence
-        if (this.state.currentGameIndex < this.state.gamesSequence.length - 1) {
+        if (reason === 'completed' && this.state.currentGameIndex < this.state.gamesSequence.length - 1) {
+            // Il y a un jeu suivant
             this.showTransition();
+        } else if (reason === 'failed') {
+            // Game over
+            this.showGameOver();
         } else {
+            // Fin de la séquence complète
             this.showGameOver();
         }
     }

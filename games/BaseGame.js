@@ -70,17 +70,18 @@ export class BaseGame {
     /**
      * Fin du jeu
      */
-    end(reason = 'completed') {
+    end(reason = 'completed', finalScore = null) {
         this.isRunning = false;
-        console.log(`🏁 BaseGame - Fin (${reason})`);
-        this.gameManager.endCurrentGame(this.score);
+        const score = finalScore !== null ? finalScore : this.score;
+        console.log(`BaseGame - Fin (${reason}) - Score: ${score}`);
+        this.gameManager.endCurrentGame(score, reason);
     }
 
     /**
      * Nettoyage des ressources
      */
     cleanup() {
-        console.log('🧹 BaseGame - Nettoyage');
+        console.log('BaseGame - Nettoyage');
         
         // Suppression du canvas P5.js
         if (this.canvas) {
@@ -89,14 +90,22 @@ export class BaseGame {
         }
         
         // Nettoyage du monde P5play
-        if (this.world) {
-            this.world.sprites.removeAll();
+        if (this.world && this.world.sprites) {
+            try {
+                this.world.sprites.removeAll();
+            } catch (e) {
+                console.warn('Erreur lors du nettoyage des sprites:', e);
+            }
             this.world = null;
         }
 
         // Arrêt de P5.js si actif
         if (window.p5Instance) {
-            window.p5Instance.remove();
+            try {
+                window.p5Instance.remove();
+            } catch (e) {
+                console.warn('Erreur lors de l\'arrêt de P5:', e);
+            }
             window.p5Instance = null;
         }
     }

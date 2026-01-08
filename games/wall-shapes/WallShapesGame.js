@@ -1,10 +1,11 @@
 /**
  * 🎯 Wall Shapes Game - Formes dans les murs
  * Le joueur doit reproduire la pose pour passer à travers le mur
- * Utilise ML5 PoseNet pour la détection de pose
+ * Utilise ML5 BodyPose pour la détection de pose
  */
 
 import { BaseGame } from '../BaseGame.js';
+import { TutorialSystem } from '../TutorialSystem.js';
 
 export class WallShapesGame extends BaseGame {
     constructor(gameManager) {
@@ -21,12 +22,18 @@ export class WallShapesGame extends BaseGame {
         this.wallSpawnTimer = 0;
         this.wallSpawnInterval = 180; // frames (~3 secondes à 60fps)
         
+        // Objectif de jeu
+        this.wallsPassed = 0;
+        this.wallsToPass = 5; // Nombre de murs à passer pour gagner
+        this.maxLives = 3;
+        this.lives = 3;
+        
         // Poses prédéfinies
         this.predefinedPoses = [
-            { id: 'arms-up', name: '🙆 Bras en haut', checkFunction: this.checkArmsUp.bind(this) },
-            { id: 'arms-wide', name: '🤸 Bras écartés', checkFunction: this.checkArmsWide.bind(this) },
-            { id: 'squat', name: '🧎 Accroupi', checkFunction: this.checkSquat.bind(this) },
-            { id: 'one-arm-up', name: '🙋 Un bras levé', checkFunction: this.checkOneArmUp.bind(this) },
+            { id: 'arms-up', name: 'Bras en haut', checkFunction: this.checkArmsUp.bind(this) },
+            { id: 'arms-wide', name: 'Bras écartés', checkFunction: this.checkArmsWide.bind(this) },
+            { id: 'squat', name: 'Accroupi', checkFunction: this.checkSquat.bind(this) },
+            { id: 'one-arm-up', name: 'Un bras levé', checkFunction: this.checkOneArmUp.bind(this) },
         ];
         
         this.currentPoseRequired = null;
@@ -38,25 +45,23 @@ export class WallShapesGame extends BaseGame {
      * Informations du tutoriel
      */
     static getTutorial() {
+        const content = TutorialSystem.generateML5Tutorial({
+            title: 'Formes dans les murs',
+            objective: 'Reproduis la pose affichée sur le mur avant qu\'il n\'arrive pour passer à travers !',
+            steps: [
+                'Autorise l\'accès à ta webcam',
+                'Place-toi devant la caméra (corps entier visible)',
+                'Regarde la silhouette sur le mur qui avance',
+                'Reproduis exactement la même pose',
+                'Maintiens la pose jusqu\'à ce que le mur te traverse',
+                'Plus tu maintiens la pose, plus tu gagnes de points !'
+            ],
+            tip: 'Assure-toi d\'avoir un bon éclairage et suffisamment de recul pour que tout ton corps soit visible.'
+        });
+
         return {
-            title: '🧱 Formes dans les murs',
-            content: `
-                <div class="space-y-4">
-                    <p class="text-lg">
-                        <strong>🎯 Objectif :</strong> Reproduis la pose affichée sur le mur avant qu'il n'arrive !
-                    </p>
-                    <p>
-                        <strong>📷 Comment jouer :</strong><br>
-                        • Autorise l'accès à ta webcam<br>
-                        • Place-toi devant la caméra (corps entier visible)<br>
-                        • Reproduis la pose indiquée sur le mur qui avance<br>
-                        • Maintiens la pose jusqu'à ce que le mur passe !
-                    </p>
-                    <p class="text-sm text-gray-600">
-                        💡 Astuce : Plus tu maintiens la bonne pose, plus tu gagnes de points !
-                    </p>
-                </div>
-            `
+            title: 'Formes dans les murs',
+            content: content
         };
     }
 
@@ -145,6 +150,13 @@ export class WallShapesGame extends BaseGame {
         p.strokeWeight(3);
         p.rect(p.width / 2 - 320, p.height / 2 - 240, 640, 480);
 
+        // Afficher la progression
+        p.fill(0);
+        p.textAlign(p.LEFT, p.TOP);
+        p.textSize(20);
+        p.text(`Murs réussis: ${this.wallsPassed}/${this.wallsToPass}`, 20, 20);
+        p.text(`Vies: ${this.lives}/${this.maxLives}`, 20, 50);
+
         // Dessiner le squelette si pose détectée
         if (this.poses.length > 0 && this.poses[0].keypoints) {
             this.drawSkeletonLarge(p, this.poses[0]);
@@ -203,7 +215,7 @@ export class WallShapesGame extends BaseGame {
                     if (this.matchTimer >= this.matchThreshold) {
                         wall.passed = true;
                         this.addScore(100);
-                        console.log('✅ Pose réussie ! +100 points');
+                        console.log('Pose réussie ! +100 points');
                         this.matchTimer = 0;
                     }
                 } else {
@@ -211,12 +223,25 @@ export class WallShapesGame extends BaseGame {
                 }
             }
             
-            // Game Over si le mur passe sans être réussi
+            // Vérifier si le mur est sorti de l'écran
             if (wall.x < -wall.width) {
                 if (!wall.passed) {
-                    console.log('❌ Mur raté !');
-                    this.end('failed');
-                    return;
+                    console.log('Mur raté !');
+                    this.lives--;
+                    
+                    if (this.lives <= 0) {
+                        this.end('failed', this.score);
+                        return;
+                    }
+                } else {
+                    this.wallsPassed++;
+                    
+                    // Vérifier si le joueur a gagné
+                    if (this.wallsPassed >= this.wallsToPass) {
+                        console.log('Jeu terminé avec succès !');
+                        this.end('completed', this.score);
+                        return;
+                    }
                 }
                 this.walls.splice(i, 1);
             }
@@ -270,7 +295,7 @@ export class WallShapesGame extends BaseGame {
             p.fill(163, 255, 86);
             p.textSize(24);
             const progress = Math.floor((this.matchTimer / this.matchThreshold) * 100);
-            p.text(`✅ ${progress}%`, centerX, 100);
+            p.text(`${progress}%`, centerX, 100);
         }
         
         // Dessiner la silhouette de la pose requise dans le trou

@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 Mini-Jeux MMI - Compilation Kawaii</title>
+    <title>Mini-Jeux MMI - Compilation Kawaii</title>
     <link rel="stylesheet" href="./styles.css">
     
     <!-- P5.js et P5play via CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.4/lib/p5.js"></script>
     <script src="https://p5play.org/v3/planck.min.js"></script>
     <script src="https://p5play.org/v3/p5play.js"></script>
     
@@ -20,21 +20,21 @@
         
         <!-- Écran de chargement -->
         <div id="loading-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-background z-50">
-            <h1 class="text-6xl font-bold text-primary mb-4 kawaii-bounce">🎮</h1>
+            <h1 class="text-6xl font-outfit font-bold text-primary mb-4 kawaii-bounce">Mini-Jeux MMI</h1>
             <p class="text-2xl text-text animate-pulse">Chargement en cours...</p>
         </div>
 
         <!-- Menu principal -->
         <div id="menu-screen" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-background z-40">
-            <h1 class="text-6xl font-bold text-primary mb-8 kawaii-pulse">
-                🎮 Mini-Jeux Kawaii
+            <h1 class="text-6xl font-outfit font-bold text-primary mb-8 kawaii-pulse">
+                Sport party
             </h1>
             <div class="flex flex-col gap-4">
-                <button id="btn-start" class="px-8 py-4 bg-primary text-white text-2xl font-bold rounded-full hover:scale-110 transition-transform kawaii-pulse">
-                    ▶️ Jouer
+                <button id="btn-start" class="px-8 py-4 bg-primary text-white text-2xl font-outfit font-bold rounded-full hover:scale-110 transition-transform kawaii-pulse">
+                    Jouer
                 </button>
-                <button id="btn-leaderboard" class="px-8 py-4 bg-secondary text-text text-2xl font-bold rounded-full hover:scale-110 transition-transform">
-                    🏆 Classement
+                <button id="btn-leaderboard" class="px-8 py-4 bg-secondary text-text text-2xl font-outfit font-bold rounded-full hover:scale-110 transition-transform">
+                    Classement
                 </button>
             </div>
         </div>
@@ -42,14 +42,14 @@
         <!-- Écran de tutoriel -->
         <div id="tutorial-screen" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-background z-30 p-8">
             <div class="max-w-2xl bg-white rounded-3xl shadow-2xl p-8 border-4 border-primary">
-                <h2 id="tutorial-title" class="text-4xl font-bold text-primary mb-6 text-center">
-                    📋 Tutoriel
+                <h2 id="tutorial-title" class="text-4xl font-outfit font-bold text-primary mb-6 text-center">
+                    Tutoriel
                 </h2>
                 <div id="tutorial-content" class="text-xl text-text mb-8 space-y-4">
                     <!-- Contenu dynamique -->
                 </div>
-                <button id="btn-start-game" class="w-full px-8 py-4 bg-secondary text-text text-2xl font-bold rounded-full hover:scale-105 transition-transform">
-                    🚀 Let's Go !
+                <button id="btn-start-game" class="w-full px-8 py-4 bg-secondary text-text text-2xl font-outfit font-bold rounded-full hover:scale-105 transition-transform">
+                    Commencer
                 </button>
             </div>
         </div>
@@ -73,30 +73,30 @@
 
         <!-- Écran de transition -->
         <div id="transition-screen" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-background z-30">
-            <h2 class="text-5xl font-bold text-primary mb-4 kawaii-bounce">
-                🎉 Bravo !
+            <h2 class="text-5xl font-outfit font-bold text-primary mb-4 kawaii-bounce">
+                Bravo !
             </h2>
             <p id="transition-text" class="text-2xl text-text mb-8">
                 <!-- Texte dynamique -->
             </p>
-            <div class="text-6xl kawaii-pulse">⏳</div>
+            <div class="text-6xl kawaii-pulse">...</div>
         </div>
 
         <!-- Écran Game Over -->
         <div id="gameover-screen" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-background z-30">
-            <h2 class="text-6xl font-bold text-primary mb-6">
-                💀 Game Over
+            <h2 class="text-6xl font-outfit font-bold text-primary mb-6">
+                Game Over
             </h2>
             <div class="bg-white rounded-3xl shadow-2xl p-8 border-4 border-primary mb-8">
                 <p class="text-xl text-text mb-4">Score Final</p>
-                <p id="final-score" class="text-6xl font-bold text-secondary text-center">0</p>
+                <p id="final-score" class="text-6xl font-outfit font-bold text-secondary text-center">0</p>
             </div>
             <div class="flex gap-4">
-                <button id="btn-restart" class="px-8 py-4 bg-primary text-white text-2xl font-bold rounded-full hover:scale-110 transition-transform">
-                    🔄 Rejouer
+                <button id="btn-restart" class="px-8 py-4 bg-primary text-white text-2xl font-outfit font-bold rounded-full hover:scale-110 transition-transform">
+                    Rejouer
                 </button>
-                <button id="btn-menu" class="px-8 py-4 bg-secondary text-text text-2xl font-bold rounded-full hover:scale-110 transition-transform">
-                    🏠 Menu
+                <button id="btn-menu" class="px-8 py-4 bg-secondary text-text text-2xl font-outfit font-bold rounded-full hover:scale-110 transition-transform">
+                    Menu
                 </button>
             </div>
         </div>

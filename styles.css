@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Import des fonts Google */
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
 @theme {
   /* Palette Kawaii personnalisée */
   --color-orange: #FFB755;
@@ -12,12 +15,27 @@
   --color-secondary: var(--color-lime);
   --color-background: var(--color-beige);
   --color-text: var(--color-black);
+  
+  /* Fonts */
+  --font-lexend: 'Lexend', sans-serif;
+  --font-outfit: 'Outfit', sans-serif;
+  
+  /* Font families pour Tailwind */
+  --font-family-sans: var(--font-lexend);
+  --font-family-display: var(--font-outfit);
 }
 
 body {
   background-color: var(--color-background);
   color: var(--color-text);
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+  font-family: var(--font-lexend);
+}
+
+/* Titres avec Outfit */
+h1, h2, h3, h4, h5, h6,
+.font-display {
+  font-family: var(--font-outfit);
+  font-weight: 700;
 }
 
 /* Animations pour le style Kawaii */
@@ -26,7 +44,7 @@ body {
   50% { transform: translateY(-10px); }
 }
 
-.bounce {
+.kawaii-bounce {
   animation: bounce-soft 2s ease-in-out infinite;
 }
 
@@ -35,6 +53,15 @@ body {
   50% { transform: scale(1.05); }
 }
 
-.pulse {
+.kawaii-pulse {
   animation: pulse-kawaii 1.5s ease-in-out infinite;
+}
+
+/* Classes utilitaires pour les fonts */
+.font-lexend {
+  font-family: var(--font-lexend);
+}
+
+.font-outfit {
+  font-family: var(--font-outfit);
 }
