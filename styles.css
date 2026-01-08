@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  /* Palette Kawaii personnalisée */
+  --color-orange: #FFB755;
+  --color-lime: #A3FF56;
+  --color-beige: #F2EEE5;
+  --color-black: #000000;
+  
+  /* Alias pour faciliter l'utilisation */
+  --color-primary: var(--color-orange);
+  --color-secondary: var(--color-lime);
+  --color-background: var(--color-beige);
+  --color-text: var(--color-black);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+}
+
+/* Animations pour le style Kawaii */
+@keyframes bounce-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.bounce {
+  animation: bounce-soft 2s ease-in-out infinite;
+}
+
+@keyframes pulse-kawaii {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.pulse {
+  animation: pulse-kawaii 1.5s ease-in-out infinite;
+}

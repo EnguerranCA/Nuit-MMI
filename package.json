@@ -1,0 +1,20 @@
+{
+  "name": "compilation-mini-jeux-mmi",
+  "version": "1.0.0",
+  "description": "Compilation de mini-jeux web avec p5play, ML5 et MakeyMakey",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["game", "p5play", "ml5", "makeymakey"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "tailwindcss": "^4.0.0",
+    "vite": "^6.0.0"
+  }
+}
