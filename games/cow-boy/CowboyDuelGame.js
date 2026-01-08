@@ -60,13 +60,13 @@ export class CowboyDuelGame extends BaseGame {
     static getTutorial() {
         const content = TutorialSystem.generateHybridTutorial({
             title: 'Duel de Cowboy',
-            objective: 'Dégaine plus vite que ton adversaire ! Vise avec ta main et tire avec ESPACE.',
+            objective: 'Dégaine plus vite que ton adversaire ! Vise avec ta main et tire avec ESPACE ou les FLÈCHES.',
             steps: [
                 'Autorise l\'accès à ta webcam',
                 'Place ta main devant la caméra pour contrôler le viseur',
                 'Attends que les volets s\'ouvrent',
                 'Quand le cowboy apparaît, vise-le rapidement',
-                'Appuie sur ESPACE pour tirer',
+                'Appuie sur ESPACE ou une FLÈCHE pour tirer',
                 'La jauge se remplit, si elle est pleine tu as perdu !',
                 'Chaque cowboy tué rapporte 100 points'
             ],
@@ -92,6 +92,7 @@ export class CowboyDuelGame extends BaseGame {
                     this.imgCowboy = p.loadImage('./games/cow-boy/image/cowboy.png');
                     this.imgTarget = p.loadImage('./games/cow-boy/image/target.png');
                     this.imgGun = p.loadImage('./games/cow-boy/image/gun first person.png');
+                    this.imgBackground = p.loadImage('./games/cow-boy/image/background.jpg');
                     
                     // Charger HandPose dans preload (recommandé par ML5)
                     this.handPose = ml5.handPose();
@@ -101,6 +102,9 @@ export class CowboyDuelGame extends BaseGame {
                     // Création du canvas
                     this.canvas = p.createCanvas(p.windowWidth, p.windowHeight);
                     this.canvas.parent('game-container');
+                    
+                    // Définir la font par défaut (nom exact Google Fonts)
+                    p.textFont('Outfit');
                     
                     // Initialisation de P5play
                     this.world = new p.World();
@@ -306,29 +310,33 @@ export class CowboyDuelGame extends BaseGame {
      * Dessiner le fond Far West
      */
     drawBackground(p) {
-        // Ciel
-        p.background(135, 206, 235); // Bleu ciel
-        
-        // Sol (sable/terre)
-        p.fill(194, 154, 108);
-        p.noStroke();
-        p.rect(0, p.height * 0.7, p.width, p.height * 0.3);
-        
-        // Ligne d'horizon
-        p.stroke(139, 90, 43);
-        p.strokeWeight(3);
-        p.line(0, p.height * 0.7, p.width, p.height * 0.7);
-        
-        // Montagnes en arrière-plan
-        p.fill(139, 90, 43);
-        p.noStroke();
-        p.triangle(p.width * 0.1, p.height * 0.7, p.width * 0.25, p.height * 0.4, p.width * 0.4, p.height * 0.7);
-        p.triangle(p.width * 0.5, p.height * 0.7, p.width * 0.7, p.height * 0.35, p.width * 0.9, p.height * 0.7);
-        
-        // Soleil
-        p.fill(255, 200, 50);
-        p.noStroke();
-        p.ellipse(p.width * 0.85, p.height * 0.15, 80, 80);
+        // Utiliser l'image de fond si elle est chargée
+        if (this.imgBackground) {
+            // Redimensionner l'image pour couvrir tout l'écran en préservant les proportions
+            const imgRatio = this.imgBackground.width / this.imgBackground.height;
+            const canvasRatio = p.width / p.height;
+            
+            let drawWidth, drawHeight, drawX, drawY;
+            
+            if (canvasRatio > imgRatio) {
+                // Le canvas est plus large que l'image, étirer horizontalement
+                drawWidth = p.width;
+                drawHeight = p.width / imgRatio;
+                drawX = 0;
+                drawY = (p.height - drawHeight) / 2;
+            } else {
+                // Le canvas est plus haut que l'image, étirer verticalement
+                drawHeight = p.height;
+                drawWidth = p.height * imgRatio;
+                drawX = (p.width - drawWidth) / 2;
+                drawY = 0;
+            }
+            
+            p.image(this.imgBackground, drawX, drawY, drawWidth, drawHeight);
+        } else {
+            // Fallback si l'image n'est pas chargée
+            p.background(135, 206, 235);
+        }
     }
 
     /**
@@ -342,6 +350,8 @@ export class CowboyDuelGame extends BaseGame {
         
         // Afficher le texte selon la phase
         p.textAlign(p.CENTER, p.CENTER);
+        p.textFont('Outfit');
+        p.textStyle(p.BOLD);
         p.textSize(64);
         p.fill(0);
         p.stroke(255);
@@ -356,6 +366,8 @@ export class CowboyDuelGame extends BaseGame {
             p.fill(200, 0, 0);
             p.text('TOO SLOW!', p.width / 2, p.height / 2);
         }
+        
+        p.textStyle(p.NORMAL);
     }
 
     /**
@@ -546,10 +558,12 @@ export class CowboyDuelGame extends BaseGame {
     }
 
     /**
-     * Gestion des inputs (tir avec ESPACE)
+     * Gestion des inputs (tir avec ESPACE ou flèches directionnelles)
      */
     onKeyPressed(key) {
-        if (key === ' ' && this.gamePhase === 'shooting') {
+        // Accepter ESPACE ou les flèches directionnelles pour tirer
+        const shootKeys = [' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+        if (shootKeys.includes(key) && this.gamePhase === 'shooting') {
             this.shoot();
         }
     }
