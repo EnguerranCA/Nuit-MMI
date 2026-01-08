@@ -67,6 +67,9 @@ class GameManager {
         // Chargement des mini-jeux
         await this.loadGames();
         
+        // Générer la galerie des jeux
+        this.populateGameGallery();
+        
         // Configuration des event listeners
         this.setupEventListeners();
         
@@ -105,6 +108,9 @@ class GameManager {
             // Import dynamique du premier mini-jeu
             const { WallShapesGame } = await import('./games/wall-shapes/WallShapesGame.js');
             this.registerGame('wall-shapes', WallShapesGame);
+
+            const { PlumberGame } = await import('./games/plumber-game/PlumberGame.js');
+            this.registerGame('plumber', PlumberGame);
             
             console.log('✅ Mini-jeux chargés:', Object.keys(this.gamesRegistry));
         } catch (error) {
@@ -118,6 +124,51 @@ class GameManager {
     registerGame(id, GameClass) {
         this.gamesRegistry[id] = GameClass;
         console.log(`✅ Jeu enregistré: ${id}`);
+    }
+
+    /**
+     * Génère dynamiquement la liste des jeux disponibles
+     */
+    populateGameGallery() {
+        const gallery = document.getElementById('gallery-games');
+        if (!gallery) return;
+
+        gallery.innerHTML = ''; // Vider la galerie
+
+        Object.entries(this.gamesRegistry).forEach(([gameId, GameClass]) => {
+            const tutorialInfo = GameClass.getTutorial();
+            const li = document.createElement('li');
+            li.className = 'game-item';
+            
+            const button = document.createElement('button');
+            button.className = 'px-6 py-3 bg-white text-text text-lg font-outfit font-bold rounded-2xl hover:scale-105 hover:bg-primary hover:text-white transition-all border-2 border-primary';
+            button.textContent = tutorialInfo.title || gameId;
+            button.addEventListener('click', () => this.startSingleGame(gameId));
+            
+            li.appendChild(button);
+            gallery.appendChild(li);
+        });
+
+        console.log('✅ Galerie des jeux générée:', Object.keys(this.gamesRegistry));
+    }
+
+    /**
+     * Démarre un jeu spécifique en mode partie rapide
+     */
+    startSingleGame(gameId) {
+        console.log(`🎮 Démarrage partie rapide: ${gameId}`);
+        
+        // Réinitialisation
+        this.state.score = 0;
+        this.state.level = 1;
+        this.state.currentGameIndex = 0;
+        this.state.isSeriesMode = false;
+        
+        // Séquence avec un seul jeu
+        this.state.gamesSequence = [gameId];
+        
+        // Affichage du tutoriel
+        this.showTutorial();
     }
 
     /**
@@ -219,7 +270,7 @@ class GameManager {
         this.state.currentGameIndex = 0;
         
         // Pour l'instant, une seule partie avec le jeu des murs
-        this.state.gamesSequence = ['wall-shapes'];
+        this.state.gamesSequence = ['wall-shapes', 'plumber'];
         
         // Affichage du tutoriel
         this.showTutorial();
