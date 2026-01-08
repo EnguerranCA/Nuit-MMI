@@ -102,9 +102,12 @@ class GameManager {
      */
     async loadGames() {
         try {
-            // Import dynamique du premier mini-jeu
+            // Import dynamique des mini-jeux
             const { WallShapesGame } = await import('./games/wall-shapes/WallShapesGame.js');
             this.registerGame('wall-shapes', WallShapesGame);
+            
+            const { CowboyDuelGame } = await import('./games/cow-boy/CowboyDuelGame.js');
+            this.registerGame('cow-boy', CowboyDuelGame);
             
             console.log('✅ Mini-jeux chargés:', Object.keys(this.gamesRegistry));
         } catch (error) {
@@ -218,8 +221,8 @@ class GameManager {
         this.state.level = 1;
         this.state.currentGameIndex = 0;
         
-        // Pour l'instant, une seule partie avec le jeu des murs
-        this.state.gamesSequence = ['wall-shapes'];
+        // Séquence des mini-jeux
+        this.state.gamesSequence = ['cow-boy'];
         
         // Affichage du tutoriel
         this.showTutorial();
