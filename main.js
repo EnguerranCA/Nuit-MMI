@@ -25,7 +25,8 @@ class GameManager {
             tutorial: document.getElementById('tutorial-screen'),
             game: document.getElementById('game-container'),
             transition: document.getElementById('transition-screen'),
-            gameover: document.getElementById('gameover-screen')
+            gameover: document.getElementById('gameover-screen'),
+            leaderboard: document.getElementById('leaderboard-screen')
         };
 
         // Références aux boutons
@@ -34,7 +35,9 @@ class GameManager {
             leaderboard: document.getElementById('btn-leaderboard'),
             startGame: document.getElementById('btn-start-game'),
             restart: document.getElementById('btn-restart'),
-            menu: document.getElementById('btn-menu')
+            menu: document.getElementById('btn-menu'),
+            saveScore: document.getElementById('btn-save-score'),
+            backMenu: document.getElementById('btn-back-menu')
         };
 
         // HUD elements
@@ -42,6 +45,9 @@ class GameManager {
             score: document.getElementById('score-display'),
             level: document.getElementById('level-display')
         };
+        
+        // API URL
+        this.API_URL = 'http://localhost:3001/api';
 
         // Registry des mini-jeux
         this.gamesRegistry = {};
@@ -123,7 +129,7 @@ class GameManager {
 
         // Bouton classement
         this.buttons.leaderboard.addEventListener('click', () => {
-            console.log('📊 Affichage du classement (à implémenter)');
+            this.showLeaderboard();
         });
 
         // Bouton Let's Go (après tutoriel)
@@ -139,6 +145,16 @@ class GameManager {
         // Bouton retour menu
         this.buttons.menu.addEventListener('click', () => {
             this.backToMenu();
+        });
+        
+        // Bouton sauvegarder le score
+        this.buttons.saveScore.addEventListener('click', () => {
+            this.savePlayerScore();
+        });
+        
+        // Bouton retour menu depuis classement
+        this.buttons.backMenu.addEventListener('click', () => {
+            this.showScreen('menu');
         });
     }
 
@@ -460,6 +476,108 @@ class GameManager {
         }
         
         this.showScreen('menu');
+    }
+    
+    /**
+     * Sauvegarder le score du joueur
+     */
+    async savePlayerScore() {
+        const pseudoInput = document.getElementById('pseudo-input');
+        const saveMessage = document.getElementById('save-message');
+        const pseudo = pseudoInput.value.trim();
+        
+        if (!pseudo) {
+            saveMessage.textContent = '⚠️ Entrez un pseudo';
+            saveMessage.className = 'text-sm text-center h-6 text-red-600';
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${this.API_URL}/score`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pseudo, score: this.state.score })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                if (result.new) {
+                    saveMessage.textContent = 'Score enregistré !';
+                    saveMessage.className = 'text-sm text-center h-6 text-green-600';
+                } else if (result.updated) {
+                    saveMessage.textContent = `Nouveau record ! (ancien: ${result.oldScore})`;
+                    saveMessage.className = 'text-sm text-center h-6 text-green-600';
+                } else {
+                    saveMessage.textContent = 'Score mis à jour';
+                    saveMessage.className = 'text-sm text-center h-6 text-blue-600';
+                }
+                
+                // Désactiver le bouton après sauvegarde
+                this.buttons.saveScore.disabled = true;
+                this.buttons.saveScore.className += ' opacity-50 cursor-not-allowed';
+            }
+        } catch (error) {
+            console.error('Erreur sauvegarde score:', error);
+            saveMessage.textContent = '❌ Erreur serveur';
+            saveMessage.className = 'text-sm text-center h-6 text-red-600';
+        }
+    }
+    
+    /**
+     * Afficher le classement
+     */
+    async showLeaderboard() {
+        this.showScreen('leaderboard');
+        
+        const leaderboardList = document.getElementById('leaderboard-list');
+        leaderboardList.innerHTML = '<p class="text-center text-gray-500">Chargement...</p>';
+        
+        try {
+            const response = await fetch(`${this.API_URL}/leaderboard?limit=20`);
+            const leaderboard = await response.json();
+            
+            if (leaderboard.length === 0) {
+                leaderboardList.innerHTML = '<p class="text-center text-gray-500">Aucun score enregistré</p>';
+                return;
+            }
+            
+            leaderboardList.innerHTML = leaderboard.map((player, index) => `
+                <div class="flex items-center justify-between p-4 ${
+                    index === 0 ? 'bg-primary text-white' :
+                    index === 1 ? 'bg-secondary text-text border-none' :
+                    'bg-background'
+                } rounded-2xl border-2 ${
+                    index < 3 ? '' : 'border-gray-300'
+                }">
+                    <div class="flex items-center gap-4">
+                        <span class="text-3xl font-outfit font-bold">
+                            ${index + 1}
+                        </span>
+                        <span class="text-xl font-bold">
+                            ${player.pseudo}
+                        </span>
+                    </div>
+                    <span class="text-2xl font-outfit font-bold ${index < 3 ? '' : 'text-primary'}">
+                        ${player.score}
+                    </span>
+                </div>
+            `).join('');
+            
+            // Animer l'apparition des éléments
+            gsap.from('#leaderboard-list > div', {
+                x: -50,
+                opacity: 0,
+                duration: 0.4,
+                stagger: 0.05,  
+                ease: 'back.out(1.7)',
+                clearProps: 'all'
+            });
+            
+        } catch (error) {
+            console.error('Erreur chargement classement:', error);
+            leaderboardList.innerHTML = '<p class="text-center text-red-600">❌ Erreur de connexion au serveur</p>';
+        }
     }
 }
 
