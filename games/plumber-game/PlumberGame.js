@@ -76,20 +76,24 @@ export class PlumberGame extends BaseGame {
                     this.world = new p.World();
                     this.world.gravity.y = 0;
                     
-                    // Configuration Vidéo
+                    // Configuration Vidéo (même taille que WallShapes)
                     this.videoCapture = p.createCapture(p.VIDEO);
-                    this.videoCapture.size(p.width, p.height);
+                    this.videoCapture.size(320, 240);
                     this.videoCapture.hide();
                     
                     // Attendre que la vidéo soit prête
                     this.videoCapture.elt.addEventListener('loadeddata', () => {
-                        // Initialisation de HandPose
-                        this.handPose = ml5.handPose();
+                        // Initialisation de HandPose (même pattern que BodyPose)
+                        this.handPose = ml5.handPose({
+                            flipped: true
+                        });
+                        
                         this.handPose.detectStart(this.videoCapture, (results) => {
                             this.hands = results;
                         });
                         
                         console.log('✅ HandPose chargé');
+                        resolve();
                     });
                     
                     // Configuration des Mains (Sprites)
@@ -113,8 +117,6 @@ export class PlumberGame extends BaseGame {
                     this.leaks.stroke = 'blue';
                     this.leaks.strokeWeight = 4;
                     this.leaks.collider = 'static';
-                    
-                    resolve();
                 };
 
                 p.draw = () => {
@@ -123,13 +125,6 @@ export class PlumberGame extends BaseGame {
 
                 p.keyPressed = () => {
                     this.onKeyPressed(p.key);
-                };
-                
-                p.windowResized = () => {
-                    p.resizeCanvas(p.windowWidth, p.windowHeight);
-                    if (this.videoCapture) {
-                        this.videoCapture.size(p.width, p.height);
-                    }
                 };
             };
 
@@ -161,27 +156,36 @@ export class PlumberGame extends BaseGame {
         
         this.frameCounter++;
         
-        // --- FOND: MUR EN BRIQUE ---
-        this.drawBrickWall(p);
-        
-        // --- DESSIN DE LA VIDEO (EFFET MIROIR) ---
+        // --- FOND : WEBCAM EN PLEIN ÉCRAN (miroir) ---
         p.push();
         p.translate(p.width, 0);
-        p.scale(-1, 1);
-        p.tint(255, 255, 255, 100);
+        p.scale(-1, 1); // Effet miroir
         p.image(this.videoCapture, 0, 0, p.width, p.height);
         p.pop();
+        
+        // Overlay sombre pour mieux voir les éléments du jeu
+        p.fill(0, 0, 0, 100);
+        p.noStroke();
+        p.rect(0, 0, p.width, p.height);
 
-        // Si le modèle n'a pas encore détecté de main, on attend
-        if (this.hands.length === 0 && this.gameState === "LOADING") {
+        // Si HandPose n'est pas encore chargé ou aucune main détectée
+        if (!this.handPose || this.hands.length === 0) {
             p.fill(255);
-            p.textSize(20);
-            p.textAlign(p.CENTER);
-            p.text("Chargement du modèle HandPose...", p.width/2, p.height/2);
-            p.text("Placez vos mains devant la caméra", p.width/2, p.height/2 + 30);
+            p.textSize(24);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.text("🖐️ Chargement de la détection des mains...", p.width/2, p.height/2 - 30);
+            p.textSize(18);
+            p.text("Placez vos mains devant la caméra", p.width/2, p.height/2 + 10);
+            
+            // Afficher un indicateur de chargement
+            p.push();
+            p.noFill();
+            p.stroke(255);
+            p.strokeWeight(4);
+            p.arc(p.width/2, p.height/2 + 60, 40, 40, 0, (this.frameCounter % 60) / 60 * p.TWO_PI);
+            p.pop();
             return;
         }
-        this.gameState = "PLAYING";
         
         // --- VÉRIFIER GAME OVER ---
         if (this.waterLevel >= 100) {
@@ -193,8 +197,8 @@ export class PlumberGame extends BaseGame {
         // --- MISE A JOUR DES MAINS ---
         this.updateHands(p);
         
-        // --- DESSINER LES KEYPOINTS DES MAINS ---
-        this.drawHandKeypoints(p);
+        // --- DESSINER LES POINTS CENTRAUX DES MAINS SUR L'ÉCRAN DE JEU ---
+        this.drawHandCenters(p);
 
         // --- GESTION DES FUITES ---
         if (this.frameCounter % this.leakSpawnRate === 0) {
@@ -274,20 +278,17 @@ export class PlumberGame extends BaseGame {
     cleanup() {
         console.log('🧹 PlumberGame - Nettoyage');
         
-        // Arrêter HandPose
-        if (this.handPose) {
-            try {
-                this.handPose.detectStop();
-            } catch (e) {
-                console.warn('Erreur arrêt HandPose:', e);
-            }
-            this.handPose = null;
-        }
-        
         // Arrêter la webcam
         if (this.videoCapture) {
+            this.videoCapture.stop();
             this.videoCapture.remove();
             this.videoCapture = null;
+        }
+        
+        // Arrêter HandPose
+        if (this.handPose) {
+            this.handPose.detectStop();
+            this.handPose = null;
         }
         
         // Supprimer les sprites
@@ -335,7 +336,72 @@ export class PlumberGame extends BaseGame {
     // ==================== MÉTHODES PRIVÉES ====================
 
     /**
-     * Dessiner un mur de briques
+     * Dessiner les points centraux des mains sur l'écran de jeu
+     */
+    drawHandCenters(p) {
+        // Main gauche
+        if (this.handL && this.handL.visible) {
+            p.push();
+            p.fill(0, 255, 0);
+            p.stroke(0);
+            p.strokeWeight(3);
+            p.circle(this.handL.x, this.handL.y, 50);
+            p.fill(255);
+            p.noStroke();
+            p.textAlign(p.CENTER, p.CENTER);
+            p.textSize(12);
+            p.text('G', this.handL.x, this.handL.y);
+            p.pop();
+        }
+        
+        // Main droite
+        if (this.handR && this.handR.visible) {
+            p.push();
+            p.fill(255, 100, 100);
+            p.stroke(0);
+            p.strokeWeight(3);
+            p.circle(this.handR.x, this.handR.y, 50);
+            p.fill(255);
+            p.noStroke();
+            p.textAlign(p.CENTER, p.CENTER);
+            p.textSize(12);
+            p.text('D', this.handR.x, this.handR.y);
+            p.pop();
+        }
+    }
+
+    /**
+     * Dessiner les mains sur la petite webcam en haut à droite
+     */
+    drawHandsOnWebcam(p, webcamX, webcamY, webcamWidth, webcamHeight) {
+        if (this.hands.length === 0) return;
+        
+        for (let hand of this.hands) {
+            let palmCenter = this.getPalmCenter(hand.keypoints);
+            if (palmCenter) {
+                // Convertir les coordonnées de la vidéo vers la petite webcam
+                // La vidéo originale fait p.width x p.height, on la redimensionne
+                const scaleX = webcamWidth / this.videoCapture.width;
+                const scaleY = webcamHeight / this.videoCapture.height;
+                
+                // Appliquer l'effet miroir
+                let x = webcamX + webcamWidth - (palmCenter.x * scaleX);
+                let y = webcamY + (palmCenter.y * scaleY);
+                
+                // Couleur selon la main
+                const isLeft = hand.handedness === "Left";
+                p.push();
+                p.fill(isLeft ? p.color(255, 100, 100) : p.color(0, 255, 0));
+                p.stroke(255);
+                p.strokeWeight(2);
+                p.circle(x, y, 15);
+                p.pop();
+            }
+        }
+    }
+
+    /**
+     * Dessiner un mur de briques (gardé pour référence)
      */
     drawBrickWall(p) {
         let brickWidth = 80;
@@ -452,31 +518,43 @@ export class PlumberGame extends BaseGame {
      * Mettre à jour les positions des mains
      */
     updateHands(p) {
-        if (this.hands.length > 0) {
-            this.handL.visible = false;
-            this.handR.visible = false;
-            
-            for (let hand of this.hands) {
-                let palmCenter = this.getPalmCenter(hand.keypoints);
-                
-                if (palmCenter) {
-                    let x = p.width - palmCenter.x;
-                    let y = palmCenter.y;
-                    
-                    if (hand.handedness === "Left") {
-                        this.handR.x = x;
-                        this.handR.y = y;
-                        this.handR.visible = true;
-                    } else if (hand.handedness === "Right") {
-                        this.handL.x = x;
-                        this.handL.y = y;
-                        this.handL.visible = true;
-                    }
-                }
-            }
-        } else {
+        if (!this.hands || this.hands.length === 0) {
             if (this.handL) this.handL.visible = false;
             if (this.handR) this.handR.visible = false;
+            return;
+        }
+        
+        this.handL.visible = false;
+        this.handR.visible = false;
+        
+        // La vidéo est en 320x240, on met à l'échelle vers l'écran
+        const videoWidth = 320;
+        const videoHeight = 240;
+        const scaleX = p.width / videoWidth;
+        const scaleY = p.height / videoHeight;
+        
+        for (let hand of this.hands) {
+            if (!hand || !hand.keypoints) continue;
+            
+            let palmCenter = this.getPalmCenter(hand.keypoints);
+            
+            if (palmCenter) {
+                // HandPose est déjà en mode flipped, donc les coordonnées sont inversées
+                // On applique juste la mise à l'échelle
+                let x = palmCenter.x * scaleX;
+                let y = palmCenter.y * scaleY;
+                
+                // Avec flipped: true, "Left" = vraie main gauche du joueur
+                if (hand.handedness === "Left") {
+                    this.handL.x = x;
+                    this.handL.y = y;
+                    this.handL.visible = true;
+                } else if (hand.handedness === "Right") {
+                    this.handR.x = x;
+                    this.handR.y = y;
+                    this.handR.visible = true;
+                }
+            }
         }
     }
 
@@ -484,23 +562,25 @@ export class PlumberGame extends BaseGame {
      * Dessiner les keypoints des mains
      */
     drawHandKeypoints(p) {
-        if (this.hands.length > 0) {
-            for (let hand of this.hands) {
-                for (let keypoint of hand.keypoints) {
-                    if (keypoint && keypoint.x && keypoint.y) {
-                        let x = p.width - keypoint.x;
-                        let y = keypoint.y;
-                        
-                        p.push();
-                        p.fill(0, 255, 0, 200);
-                        p.noStroke();
-                        p.circle(x, y, 8);
-                        p.pop();
-                    }
+        if (!this.hands || this.hands.length === 0) return;
+        
+        for (let hand of this.hands) {
+            if (!hand || !hand.keypoints) continue;
+            
+            for (let keypoint of hand.keypoints) {
+                if (keypoint && keypoint.x && keypoint.y) {
+                    let x = p.width - keypoint.x;
+                    let y = keypoint.y;
+                    
+                    p.push();
+                    p.fill(0, 255, 0, 200);
+                    p.noStroke();
+                    p.circle(x, y, 8);
+                    p.pop();
                 }
-                
-                this.drawHandConnections(p, hand.keypoints);
             }
+            
+            this.drawHandConnections(p, hand.keypoints);
         }
     }
 
