@@ -9,9 +9,17 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "keywords": ["game", "p5play", "ml5", "makeymakey"],
+  "keywords": [
+    "game",
+    "p5play",
+    "ml5",
+    "makeymakey"
+  ],
   "author": "",
   "license": "MIT",
+  "dependencies": {
+    "gsap": "^3.14.2"
+  },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
     "tailwindcss": "^4.0.0",

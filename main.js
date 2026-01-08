@@ -3,6 +3,8 @@
  * Gère l'enchaînement des mini-jeux, les transitions, les tutoriels et les scores
  */
 
+import gsap from 'gsap';
+
 class GameManager {
     constructor() {
         // État du jeu
@@ -63,6 +65,27 @@ class GameManager {
         // Affichage du menu après un court délai
         setTimeout(() => {
             this.showScreen('menu');
+            
+            // Animer les éléments du menu après l'apparition
+            gsap.from('#menu-screen h1', {
+                scale: 0,
+                rotation: -10,
+                opacity: 0,
+                duration: 0.8,
+                delay: 0.3,
+                ease: 'elastic.out(1, 0.5)',
+                clearProps: 'all' // Nettoyer les propriétés inline après animation
+            });
+            
+            gsap.from('#menu-screen button', {
+                x: -100,
+                opacity: 0,
+                duration: 0.6,
+                delay: 0.6,
+                stagger: 0.15,
+                ease: 'back.out(1.7)',
+                clearProps: 'all'
+            });
         }, 1500);
     }
 
@@ -120,20 +143,50 @@ class GameManager {
     }
 
     /**
-     * Affichage d'un écran spécifique
+     * Affichage d'un écran spécifique avec animations GSAP
      */
     showScreen(screenName) {
-        // Masquer tous les écrans
-        Object.values(this.screens).forEach(screen => {
-            screen.classList.add('hidden');
+        const newScreen = this.screens[screenName];
+        if (!newScreen) return;
+
+        // Trouver l'écran actuellement visible
+        const currentScreen = Object.entries(this.screens).find(([name, screen]) => 
+            !screen.classList.contains('hidden')
+        )?.[1];
+
+        // Timeline GSAP pour l'animation
+        const tl = gsap.timeline({
+            onComplete: () => {
+                this.state.currentScreen = screenName;
+                console.log(`📺 Écran affiché: ${screenName}`);
+            }
         });
 
-        // Afficher l'écran demandé
-        if (this.screens[screenName]) {
-            this.screens[screenName].classList.remove('hidden');
-            this.state.currentScreen = screenName;
-            console.log(`📺 Écran affiché: ${screenName}`);
+        if (currentScreen && currentScreen !== newScreen) {
+            // Animer la sortie de l'écran actuel
+            tl.to(currentScreen, {
+                opacity: 0,
+                scale: 0.95,
+                duration: 0.3,
+                ease: 'power2.in',
+                onComplete: () => {
+                    currentScreen.classList.add('hidden');
+                    gsap.set(currentScreen, { opacity: 1, scale: 1 }); // Reset pour la prochaine fois
+                }
+            });
         }
+
+        // Préparer le nouvel écran
+        gsap.set(newScreen, { opacity: 0, scale: 1.05 });
+        newScreen.classList.remove('hidden');
+
+        // Animer l'entrée du nouvel écran
+        tl.to(newScreen, {
+            opacity: 1,
+            scale: 1,
+            duration: 0.4,
+            ease: 'power2.out'
+        }, currentScreen ? '-=0.1' : 0); // Légère superposition si transition depuis un autre écran
     }
 
     /**
@@ -173,8 +226,36 @@ class GameManager {
         document.getElementById('tutorial-title').textContent = tutorialInfo.title;
         document.getElementById('tutorial-content').innerHTML = tutorialInfo.content;
         
-        // Affichage
+        // Affichage avec animations des éléments internes
         this.showScreen('tutorial');
+        
+        // Animer les éléments du tutoriel après l'apparition de l'écran
+        gsap.from('#tutorial-title', {
+            y: -30,
+            opacity: 0,
+            duration: 0.5,
+            delay: 0.3,
+            ease: 'back.out(1.7)',
+            clearProps: 'all'
+        });
+        
+        gsap.from('#tutorial-content', {
+            y: 20,
+            opacity: 0,
+            duration: 0.5,
+            delay: 0.4,
+            ease: 'power2.out',
+            clearProps: 'all'
+        });
+        
+        gsap.from('#btn-start-game', {
+            scale: 0,
+            opacity: 0,
+            duration: 0.5,
+            delay: 0.6,
+            ease: 'back.out(1.7)',
+            clearProps: 'all'
+        });
     }
 
     /**
@@ -189,6 +270,17 @@ class GameManager {
         // Affichage de la zone de jeu
         this.showScreen('game');
         
+        // Animer l'apparition du HUD
+        gsap.from('#game-hud-bottom > div', {
+            y: 100,
+            opacity: 0,
+            duration: 0.6,
+            delay: 0.4,
+            stagger: 0.15,
+            ease: 'back.out(1.7)',
+            clearProps: 'all'
+        });
+        
         // Mise à jour du HUD
         this.updateHUD();
         
@@ -199,11 +291,42 @@ class GameManager {
     }
 
     /**
-     * Mise à jour du HUD
+     * Mise à jour du HUD avec animation
      */
     updateHUD() {
-        this.hud.score.textContent = this.state.score;
-        this.hud.level.textContent = this.state.level;
+        // Animer le changement de valeur
+        const scoreElement = this.hud.score;
+        const levelElement = this.hud.level;
+        
+        const oldScore = parseInt(scoreElement.textContent) || 0;
+        const oldLevel = parseInt(levelElement.textContent) || 0;
+        
+        // Animation du score
+        if (this.state.score !== oldScore) {
+            gsap.to({ value: oldScore }, {
+                value: this.state.score,
+                duration: 0.5,
+                ease: 'power2.out',
+                onUpdate: function() {
+                    scoreElement.textContent = Math.round(this.targets()[0].value);
+                }
+            });
+            
+            // Petit effet de "pop"
+            gsap.fromTo(scoreElement, 
+                { scale: 1 },
+                { scale: 1.3, duration: 0.15, yoyo: true, repeat: 1, ease: 'power2.inOut' }
+            );
+        }
+        
+        // Animation du niveau
+        if (this.state.level !== oldLevel) {
+            levelElement.textContent = this.state.level;
+            gsap.fromTo(levelElement,
+                { scale: 1 },
+                { scale: 1.4, duration: 0.2, yoyo: true, repeat: 1, ease: 'back.out(1.7)' }
+            );
+        }
     }
 
     /**
@@ -255,6 +378,26 @@ class GameManager {
         
         this.showScreen('transition');
         
+        // Animer les éléments de transition
+        gsap.from('#transition-screen h2', {
+            scale: 0,
+            rotation: 360,
+            opacity: 0,
+            duration: 0.6,
+            delay: 0.3,
+            ease: 'back.out(2)',
+            clearProps: 'all'
+        });
+        
+        gsap.from('#transition-text', {
+            y: 50,
+            opacity: 0,
+            duration: 0.5,
+            delay: 0.5,
+            ease: 'power2.out',
+            clearProps: 'all'
+        });
+        
         // Passage au jeu suivant après 3 secondes
         setTimeout(() => {
             this.state.currentGameIndex++;
@@ -268,6 +411,35 @@ class GameManager {
     showGameOver() {
         document.getElementById('final-score').textContent = this.state.score;
         this.showScreen('gameover');
+        
+        // Animer les éléments du game over
+        gsap.from('#gameover-screen h2', {
+            scale: 0,
+            opacity: 0,
+            duration: 0.6,
+            delay: 0.3,
+            ease: 'elastic.out(1, 0.5)',
+            clearProps: 'all'
+        });
+        
+        gsap.from('#gameover-screen > div', {
+            y: 50,
+            opacity: 0,
+            duration: 0.5,
+            delay: 0.5,
+            ease: 'power2.out',
+            clearProps: 'all'
+        });
+        
+        gsap.from('#gameover-screen button', {
+            scale: 0,
+            opacity: 0,
+            duration: 0.4,
+            delay: 0.7,
+            stagger: 0.1,
+            ease: 'back.out(1.7)',
+            clearProps: 'all'
+        });
     }
 
     /**
