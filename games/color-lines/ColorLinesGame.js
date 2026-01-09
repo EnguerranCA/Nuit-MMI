@@ -205,9 +205,10 @@ export class ColorLinesGame extends BaseGame {
         this.activeLaneIndex = null;
         this.gamePhase = 'playing';
         
-        // BPM sync initialization
+        // BPM sync initialization - will be set when music actually starts
         this.beatCount = 0;
-        this.lastBeatTime = performance.now();
+        this.lastBeatTime = 0;
+        this.musicStarted = false;
         
         // Start music
         if (this.soundMusic && !this.soundMusic.isPlaying()) {
@@ -354,6 +355,19 @@ export class ColorLinesGame extends BaseGame {
      * Update incoming lines (spawn and move)
      */
     updateLines(p) {
+        // Initialize beat timing when music actually starts playing
+        if (!this.musicStarted && this.soundMusic && this.soundMusic.isPlaying()) {
+            this.musicStarted = true;
+            this.lastBeatTime = performance.now();
+            this.beatCount = 0;
+            console.log('🎵 Music detected playing - syncing beats now');
+        }
+        
+        // Don't spawn until music is playing
+        if (!this.musicStarted) {
+            return;
+        }
+        
         // BPM-synced spawning
         const currentTime = performance.now();
         const timeSinceLastBeat = currentTime - this.lastBeatTime;
