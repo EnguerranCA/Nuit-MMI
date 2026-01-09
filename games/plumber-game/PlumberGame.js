@@ -22,6 +22,12 @@ export class PlumberGame extends BaseGame {
         this.handL = null;
         this.handR = null;
         
+        // Sons
+        this.soundMusic = null;
+        this.soundDripping = null;
+        this.soundFixed = null;
+        this.musicVolume = 0.4;
+        
         // Gameplay
         this.gameState = "LOADING";
         this.leakSpawnRate = 120; // Frames entre chaque fuite
@@ -86,6 +92,11 @@ export class PlumberGame extends BaseGame {
                 p.preload = () => {
                     // Charger HandPose dans preload (recommandé par ML5)
                     this.handPose = ml5.handPose();
+                    
+                    // Chargement des sons
+                    this.soundMusic = p.loadSound('./sound/ost plumber.mp3');
+                    this.soundDripping = p.loadSound('./sound/water-dripping.mp3');
+                    this.soundFixed = p.loadSound('./sound/fixed.mp3');
                 };
                 
                 p.setup = () => {
@@ -155,6 +166,13 @@ export class PlumberGame extends BaseGame {
     start() {
         super.start();
         console.log('▶️ PlumberGame - Démarrage');
+        
+        // Lancer la musique plumber en boucle
+        if (this.soundMusic && !this.soundMusic.isPlaying()) {
+            this.soundMusic.setVolume(this.musicVolume);
+            this.soundMusic.loop();
+            console.log('🎵 Musique plumber lancée');
+        }
         
         // Réinitialiser les variables
         this.score = 0;
@@ -226,6 +244,17 @@ export class PlumberGame extends BaseGame {
         if (this.leaks && this.leaks.length > 0) {
             this.waterLevel += this.leaks.length * 0.03;
             this.waterLevel = Math.min(100, this.waterLevel);
+            
+            // Jouer le son de gouttes d'eau s'il y a des fuites et si pas déjà en cours
+            if (this.soundDripping && !this.soundDripping.isPlaying()) {
+                this.soundDripping.setVolume(0.4);
+                this.soundDripping.loop();
+            }
+        } else {
+            // Arrêter le son de gouttes si toutes les fuites sont bouchées
+            if (this.soundDripping && this.soundDripping.isPlaying()) {
+                this.soundDripping.stop();
+            }
         }
 
         // --- DESSINER LES FUITES ANIMÉES ---
@@ -459,6 +488,18 @@ export class PlumberGame extends BaseGame {
      */
     cleanup() {
         console.log('🧹 PlumberGame - Nettoyage');
+        
+        // Arrêter tous les sons
+        if (this.soundMusic && this.soundMusic.isPlaying()) {
+            this.soundMusic.stop();
+            console.log('🔇 Musique plumber arrêtée');
+        }
+        if (this.soundDripping && this.soundDripping.isPlaying()) {
+            this.soundDripping.stop();
+        }
+        if (this.soundFixed && this.soundFixed.isPlaying()) {
+            this.soundFixed.stop();
+        }
         
         // Arrêter la webcam
         if (this.videoCapture) {
@@ -1121,6 +1162,12 @@ export class PlumberGame extends BaseGame {
     repairLeak(leak, p) {
         // Effet splash lors de la réparation
         this.createRepairSplash(p, leak.x, leak.y);
+        
+        // Jouer le son de réparation
+        if (this.soundFixed) {
+            this.soundFixed.setVolume(0.6);
+            this.soundFixed.play();
+        }
         
         leak.remove();
         this.score++;

@@ -22,6 +22,15 @@ export class ColorLinesGame extends BaseGame {
     constructor(gameManager) {
         super(gameManager);
         
+        // Music & BPM sync
+        this.soundMusic = null;
+        this.musicVolume = 0.5;
+        this.bpm = 160;
+        this.beatDuration = 60000 / this.bpm; // 375ms per beat
+        this.lastBeatTime = 0;
+        this.beatCount = 0;
+        this.beatsPerSpawn = 4; // Spawn a line every 4 beats (1 measure at 4/4)
+        
         // Lane icons (SVG images)
         this.laneIcons = [];
         
@@ -91,6 +100,9 @@ export class ColorLinesGame extends BaseGame {
                         const icon = p.loadImage(`./games/color-lines/image/${LANE_COLORS[i].icon}`);
                         this.laneIcons.push(icon);
                     }
+                    
+                    // Load music
+                    this.soundMusic = p.loadSound('./sound/ost lines.mp3');
                 };
                 
                 p.setup = () => {
@@ -176,8 +188,19 @@ export class ColorLinesGame extends BaseGame {
         this.activeLaneIndex = null;
         this.gamePhase = 'playing';
         
-        // Spawn first line immediately
-        this.lineSpawnTimer = this.lineSpawnInterval;
+        // BPM sync initialization
+        this.beatCount = 0;
+        this.lastBeatTime = performance.now();
+        
+        // Start music
+        if (this.soundMusic && !this.soundMusic.isPlaying()) {
+            this.soundMusic.setVolume(this.musicVolume);
+            this.soundMusic.loop();
+            console.log('🎵 Music started at 160 BPM');
+        }
+        
+        // Don't spawn immediately - wait for beat sync
+        this.lineSpawnTimer = 0;
     }
 
     /**
@@ -271,11 +294,20 @@ export class ColorLinesGame extends BaseGame {
      * Update incoming lines (spawn and move)
      */
     updateLines(p) {
-        // Spawn new lines
-        this.lineSpawnTimer++;
-        if (this.lineSpawnTimer >= this.lineSpawnInterval) {
-            this.spawnLine(p);
-            this.lineSpawnTimer = 0;
+        // BPM-synced spawning
+        const currentTime = performance.now();
+        const timeSinceLastBeat = currentTime - this.lastBeatTime;
+        
+        // Check if a new beat has occurred
+        if (timeSinceLastBeat >= this.beatDuration) {
+            this.lastBeatTime = currentTime - (timeSinceLastBeat % this.beatDuration); // Keep in sync
+            this.beatCount++;
+            
+            // Spawn a line every N beats (synced to music)
+            if (this.beatCount % this.beatsPerSpawn === 0) {
+                this.spawnLine(p);
+                console.log(`🎵 Beat ${this.beatCount} - Spawning line!`);
+            }
         }
         
         // Move lines and handle drawing
@@ -569,6 +601,12 @@ export class ColorLinesGame extends BaseGame {
      */
     cleanup() {
         console.log('🧹 ColorLinesGame - Cleanup');
+        
+        // Stop music
+        if (this.soundMusic && this.soundMusic.isPlaying()) {
+            this.soundMusic.stop();
+            console.log('🔇 Music stopped');
+        }
         
         // Reset state
         this.activeLaneIndex = null;

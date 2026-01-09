@@ -395,6 +395,13 @@ export class WallShapesGame extends BaseGame {
         // Police
         this.lexendFont = null;
         
+        // Sons
+        this.soundMusic = null;
+        this.soundSuccess = null;
+        this.soundHeartbeat = null;
+        this.musicVolume = 0.4;
+        this.heartbeatPlaying = false;
+        
         // ML5 BodyPose
         this.bodyPose = null;
         this.poses = [];
@@ -589,6 +596,11 @@ export class WallShapesGame extends BaseGame {
                     // Charger la police Lexend
                     this.lexendFont = p.loadFont('/fonts/Lexend/Lexend-VariableFont_wght.ttf');
                     
+                    // Charger les sons
+                    this.soundMusic = p.loadSound('./sound/ost synthwave.mp3');
+                    this.soundSuccess = p.loadSound('./sound/success.mp3');
+                    this.soundHeartbeat = p.loadSound('./sound/heartbeat.mp3');
+                    
                     // Charger BodyPose dans preload
                     this.bodyPose = ml5.bodyPose('MoveNet', {
                         modelType: 'SINGLEPOSE_LIGHTNING',
@@ -667,6 +679,13 @@ export class WallShapesGame extends BaseGame {
     start() {
         super.start();
         console.log('▶️ WallShapesGame - Démarrage');
+        
+        // Lancer la musique synthwave en boucle
+        if (this.soundMusic && !this.soundMusic.isPlaying()) {
+            this.soundMusic.setVolume(this.musicVolume);
+            this.soundMusic.loop();
+            console.log('🎵 Musique synthwave lancée');
+        }
         
         // Reset game state
         this.score = 0;
@@ -756,12 +775,42 @@ export class WallShapesGame extends BaseGame {
                 wall.update(this.wallSpeed);
                 wall.draw(p, playerPose);
                 
+                // Heartbeat quand le mur est proche (z < 300)
+                if (wall.z < 300 && wall.z > 0 && !wall.scored) {
+                    if (!this.heartbeatPlaying && this.soundHeartbeat) {
+                        this.soundHeartbeat.setVolume(0.5);
+                        this.soundHeartbeat.loop();
+                        this.heartbeatPlaying = true;
+                        // Baisser le volume de la musique
+                        if (this.soundMusic) {
+                            this.soundMusic.setVolume(0.15);
+                        }
+                    }
+                }
+                
                 if (wall.isAtPlayer() && !wall.scored) {
                     wall.scored = true;
+                    
+                    // Arrêter le heartbeat
+                    if (this.heartbeatPlaying && this.soundHeartbeat) {
+                        this.soundHeartbeat.stop();
+                        this.heartbeatPlaying = false;
+                        // Remonter le volume de la musique
+                        if (this.soundMusic) {
+                            this.soundMusic.setVolume(this.musicVolume);
+                        }
+                    }
+                    
                     const isMatch = wall.checkBodyMatch(p, playerPose);
                     if (isMatch) {
                         const points = Math.floor(wall.matchScore);
                         this.addScore(points);
+                        
+                        // Jouer le son de succès
+                        if (this.soundSuccess) {
+                            this.soundSuccess.setVolume(0.6);
+                            this.soundSuccess.play();
+                        }
                         
                         if (wall.matchScore >= 95) {
                             this.showFeedback(p, 'PERFECT! +' + points, p.color(...COLORS.success));
@@ -1250,6 +1299,19 @@ export class WallShapesGame extends BaseGame {
      */
     cleanup() {
         console.log('🧹 WallShapesGame - Nettoyage');
+        
+        // Arrêter tous les sons
+        if (this.soundMusic && this.soundMusic.isPlaying()) {
+            this.soundMusic.stop();
+            console.log('🔇 Musique synthwave arrêtée');
+        }
+        if (this.soundHeartbeat && this.soundHeartbeat.isPlaying()) {
+            this.soundHeartbeat.stop();
+        }
+        if (this.soundSuccess && this.soundSuccess.isPlaying()) {
+            this.soundSuccess.stop();
+        }
+        this.heartbeatPlaying = false;
         
         // Supprimer le HUD
         this.removeHUD();
