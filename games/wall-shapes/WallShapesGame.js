@@ -506,14 +506,14 @@ export class WallShapesGame extends BaseGame {
                 </div>
                 <!-- Lives -->
                 <div class="bg-black/60 backdrop-blur-md rounded-xl px-4 py-2 border border-white/10">
-                    <span class="text-xs text-white/60 uppercase tracking-wider">Vies</span>
+                    <span class="text-xs text-white/60 uppercase tracking-wider">Lives</span>
                     <p id="ws-lives" class="text-2xl font-bold text-red-400">${'❤️'.repeat(this.lives)}</p>
                 </div>
             </div>
             
             <!-- Status à droite -->
             <div class="bg-black/60 backdrop-blur-md rounded-xl px-4 py-2 border border-white/10">
-                <span id="ws-status" class="text-sm text-white/70">Prêt</span>
+                <span id="ws-status" class="text-sm text-white/70">Ready</span>
             </div>
         `;
         
@@ -539,13 +539,13 @@ export class WallShapesGame extends BaseGame {
         if (statusEl) {
             switch (this.gamePhase) {
                 case 'waiting_pose':
-                    statusEl.textContent = '📷 En attente de pose...';
+                    statusEl.textContent = '📷 Waiting for pose...';
                     break;
                 case 'playing':
-                    statusEl.textContent = '🎮 En jeu';
+                    statusEl.textContent = '🎮 Playing';
                     break;
                 default:
-                    statusEl.textContent = 'Prêt';
+                    statusEl.textContent = 'Ready';
             }
         }
     }
@@ -561,13 +561,13 @@ export class WallShapesGame extends BaseGame {
     }
 
     /**
-     * Informations du tutoriel
+     * Tutorial information
      */
     static getTutorial() {
         const content = TutorialSystem.generateML5Tutorial({
             title: 'Pose Wall',
-            objective: 'Reproduis la pose affichée sur le mur avant qu\'il n\'arrive pour passer à travers !',
-            tip: 'Assure-toi d\'avoir un bon éclairage et suffisamment de recul pour que tout ton corps soit visible.'
+            objective: 'Reproduce the pose shown on the wall before it arrives to pass through!',
+            tip: 'Make sure you have good lighting and enough space for your full body to be visible.'
         });
 
         return {
@@ -730,11 +730,11 @@ export class WallShapesGame extends BaseGame {
             p.textFont('Outfit');
             p.textSize(24);
             p.textStyle(p.BOLD);
-            p.text('En attente de détection de pose...', p.width/2, p.height/2 - 50);
+            p.text('Waiting for pose detection...', p.width/2, p.height/2 - 50);
             p.textSize(16);
             p.textStyle(p.NORMAL);
             p.fill(200);
-            p.text('Placez-vous devant la caméra', p.width/2, p.height/2);
+            p.text('Stand in front of the camera', p.width/2, p.height/2);
             p.pop();
             
             // Passer en mode playing dès que poseReady est true

@@ -67,22 +67,22 @@ export class CowboyDuelGame extends BaseGame {
      */
     static getTutorial() {
         const content = TutorialSystem.generateHybridTutorial({
-            title: 'Duel de Cowboy',
-            objective: 'Dégaine plus vite que ton adversaire ! Vise avec ta main et tire avec ESPACE ou les FLÈCHES.',
+            title: 'Cowboy Duel',
+            objective: 'Draw faster than your opponent! Aim with your hand and shoot with SPACE or ARROW keys.',
             steps: [
-                'Autorise l\'accès à ta webcam',
-                'Place ta main devant la caméra pour contrôler le viseur',
-                'Attends que les volets s\'ouvrent',
-                'Quand le cowboy apparaît, vise-le rapidement',
-                'Appuie sur ESPACE ou une FLÈCHE pour tirer',
-                'La jauge se remplit, si elle est pleine tu as perdu !',
-                'Chaque cowboy tué rapporte 100 points'
+                'Allow webcam access',
+                'Place your hand in front of the camera to control the crosshair',
+                'Wait for the shutters to open',
+                'When the cowboy appears, aim at him quickly',
+                'Press SPACE or an ARROW key to shoot',
+                'The gauge fills up - if it\'s full, you lose!',
+                'Each cowboy killed earns 100 points'
             ],
-            tip: 'Plus tu élimines de cowboys, moins tu as de temps pour réagir. Reste concentré !'
+            tip: 'The more cowboys you eliminate, the less time you have to react. Stay focused!'
         });
 
         return {
-            title: 'Duel de Cowboy',
+            title: 'Cowboy Duel',
             content: content
         };
     }
@@ -505,7 +505,7 @@ export class CowboyDuelGame extends BaseGame {
             p.textAlign(p.CENTER, p.CENTER);
             p.textSize(16);
             p.noStroke();
-            p.text(`TEMPS: ${(this.maxTime - this.timeGauge).toFixed(1)}s`, p.width / 2, gaugeY + gaugeHeight / 2);
+            p.text(`TIME: ${(this.maxTime - this.timeGauge).toFixed(1)}s`, p.width / 2, gaugeY + gaugeHeight / 2);
         }
         
         // Manche actuelle
@@ -514,7 +514,7 @@ export class CowboyDuelGame extends BaseGame {
         p.strokeWeight(3);
         p.textAlign(p.LEFT, p.TOP);
         p.textSize(24);
-        p.text(`Manche: ${this.round}`, 20, 20);
+        p.text(`Round: ${this.round}`, 20, 20);
         p.text(`Cowboys: ${this.cowboysKilled}`, 20, 50);
     }
 
@@ -581,7 +581,7 @@ export class CowboyDuelGame extends BaseGame {
         p.textAlign(p.LEFT, p.TOP);
         p.textSize(12);
         p.text(`DEBUG - HandPose`, debugX, debugY + debugHeight + 5);
-        p.text(`Mains détectées: ${this.hands.length}`, debugX, debugY + debugHeight + 20);
+        p.text(`Hands detected: ${this.hands.length}`, debugX, debugY + debugHeight + 20);
         
         if (this.hands.length > 0 && this.hands[0].keypoints) {
             const indexTip = this.hands[0].keypoints.find(k => k.name === 'index_finger_tip');
@@ -591,8 +591,8 @@ export class CowboyDuelGame extends BaseGame {
             }
         } else {
             p.fill(255, 100, 100);
-            p.text(`Aucune main détectée!`, debugX, debugY + debugHeight + 35);
-            p.text(`Placez votre main devant la caméra`, debugX, debugY + debugHeight + 50);
+            p.text(`No hand detected!`, debugX, debugY + debugHeight + 35);
+            p.text(`Place your hand in front of the camera`, debugX, debugY + debugHeight + 50);
         }
         
         p.fill(255);

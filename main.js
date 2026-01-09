@@ -464,7 +464,7 @@ class GameManager {
      */
     showTransition() {
         document.getElementById('transition-text').textContent = 
-            `Score: ${this.state.score} - Prochain jeu dans 3...`;
+            `Score: ${this.state.score} - Next game in 3...`;
         
         this.showScreen('transition');
         
@@ -575,7 +575,7 @@ class GameManager {
         const pseudo = pseudoInput.value.trim();
         
         if (!pseudo) {
-            saveMessage.textContent = '⚠️ Entrez un pseudo';
+            saveMessage.textContent = '⚠️ Enter a username';
             saveMessage.className = 'text-sm text-center h-6 text-red-600';
             return;
         }
@@ -591,13 +591,13 @@ class GameManager {
             
             if (result.success) {
                 if (result.new) {
-                    saveMessage.textContent = 'Score enregistré !';
+                    saveMessage.textContent = 'Score saved!';
                     saveMessage.className = 'text-sm text-center h-6 text-green-600';
                 } else if (result.updated) {
-                    saveMessage.textContent = `Nouveau record ! (ancien: ${result.oldScore})`;
+                    saveMessage.textContent = `New record! (previous: ${result.oldScore})`;
                     saveMessage.className = 'text-sm text-center h-6 text-green-600';
                 } else {
-                    saveMessage.textContent = 'Score mis à jour';
+                    saveMessage.textContent = 'Score updated';
                     saveMessage.className = 'text-sm text-center h-6 text-blue-600';
                 }
                 
@@ -606,8 +606,8 @@ class GameManager {
                 this.buttons.saveScore.className += ' opacity-50 cursor-not-allowed';
             }
         } catch (error) {
-            console.error('Erreur sauvegarde score:', error);
-            saveMessage.textContent = '❌ Erreur serveur';
+            console.error('Error saving score:', error);
+            saveMessage.textContent = '❌ Server error';
             saveMessage.className = 'text-sm text-center h-6 text-red-600';
         }
     }
@@ -619,14 +619,14 @@ class GameManager {
         this.showScreen('leaderboard');
         
         const leaderboardList = document.getElementById('leaderboard-list');
-        leaderboardList.innerHTML = '<p class="text-center text-gray-500">Chargement...</p>';
+        leaderboardList.innerHTML = '<p class="text-center text-gray-500">Loading...</p>';
         
         try {
             const response = await fetch(`${this.API_URL}/leaderboard?limit=20`);
             const leaderboard = await response.json();
             
             if (leaderboard.length === 0) {
-                leaderboardList.innerHTML = '<p class="text-center text-gray-500">Aucun score enregistré</p>';
+                leaderboardList.innerHTML = '<p class="text-center text-gray-500">No scores recorded yet</p>';
                 return;
             }
             
@@ -663,8 +663,8 @@ class GameManager {
             });
             
         } catch (error) {
-            console.error('Erreur chargement classement:', error);
-            leaderboardList.innerHTML = '<p class="text-center text-red-600">❌ Erreur de connexion au serveur</p>';
+            console.error('Error loading leaderboard:', error);
+            leaderboardList.innerHTML = '<p class="text-center text-red-600">❌ Server connection error</p>';
         }
     }
 }

@@ -1,18 +1,18 @@
 /**
- * Tutorial System - Système de tutoriel réutilisable
- * Génère automatiquement le HTML du tutoriel selon un format standard
+ * Tutorial System - Reusable tutorial system
+ * Automatically generates tutorial HTML in a standard format
  */
 
 export class TutorialSystem {
     /**
-     * Génère le HTML complet du tutoriel
-     * @param {Object} tutorialData - Données du tutoriel
-     * @param {string} tutorialData.title - Titre du jeu
-     * @param {string} tutorialData.objective - Objectif du jeu
-     * @param {string} tutorialData.tip - Astuce (optionnel)
-     * @param {string} tutorialData.technology - Technologie utilisée (ML5, MakeyMakey, etc.)
-     * @param {string} tutorialData.input - Type d'input (Webcam, MakeyMakey, etc.)
-     * @returns {string} - HTML du tutoriel
+     * Generates the complete tutorial HTML
+     * @param {Object} tutorialData - Tutorial data
+     * @param {string} tutorialData.title - Game title
+     * @param {string} tutorialData.objective - Game objective
+     * @param {string} tutorialData.tip - Tip (optional)
+     * @param {string} tutorialData.technology - Technology used (ML5, MakeyMakey, etc.)
+     * @param {string} tutorialData.input - Input type (Webcam, MakeyMakey, etc.)
+     * @returns {string} - Tutorial HTML
      */
     static generate(tutorialData) {
         const {
@@ -23,23 +23,23 @@ export class TutorialSystem {
             input = 'Webcam'
         } = tutorialData;
 
-        // Construction de l'astuce si elle existe
+        // Build tip section if it exists
         const tipHTML = tip ? `
             <div class="bg-lime-100 border-2 border-lime-400 rounded-xl p-3 mt-4">
                 <p class="text-base">
-                    <strong>Astuce :</strong> ${tip}
+                    <strong>Tip:</strong> ${tip}
                 </p>
             </div>
         ` : '';
 
-        // HTML complet
+        // Complete HTML
         return `
             <div class="space-y-5">
                 
-                <!-- Objectif -->
+                <!-- Objective -->
                 <div class="bg-orange-50 border-2 border-primary rounded-xl p-4">
                     <p class="text-lg">
-                        <strong>Objectif :</strong><br>
+                        <strong>Objective:</strong><br>
                         <span class="mt-2 block text-center">${objective}</span>
                     </p>
                 </div>

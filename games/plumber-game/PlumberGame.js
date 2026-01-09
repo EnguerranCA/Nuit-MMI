@@ -60,17 +60,17 @@ export class PlumberGame extends BaseGame {
         const content = TutorialSystem.generateHybridTutorial({
             title: 'Plumber Game',
             icon: '🔧',
-            objective: 'Bouche les fuites d\'eau avec tes mains avant que la pièce ne soit inondée !',
+            objective: 'Plug the water leaks with your hands before the room floods!',
             steps: [
-                'Autorise l\'accès à ta webcam',
-                'Connecte ton MakeyMakey aux flèches directionnelles',
-                'Place ta main sur une fuite (elle devient orange)',
-                'Regarde la forme de la fuite et appuie sur la bonne touche :',
-                '⬆️ HAUT = Carré bleu | ⬇️ BAS = Étoile jaune',
-                '⬅️ GAUCHE = Cercle vert | ➡️ DROITE = Triangle rouge',
-                'Ne laisse pas le niveau d\'eau atteindre 100% !'
+                'Allow webcam access',
+                'Connect your MakeyMakey to the arrow keys',
+                'Place your hand on a leak (it turns orange)',
+                'Look at the leak shape and press the right key:',
+                '⬆️ UP = Blue Square | ⬇️ DOWN = Yellow Star',
+                '⬅️ LEFT = Green Circle | ➡️ RIGHT = Red Triangle',
+                'Don\'t let the water level reach 100%!'
             ],
-            tip: 'Travaille en équipe : un joueur place les mains, l\'autre appuie sur les touches !'
+            tip: 'Work as a team: one player places hands, the other presses keys!'
         });
 
         return {
@@ -199,9 +199,9 @@ export class PlumberGame extends BaseGame {
             p.fill(255);
             p.textSize(24);
             p.textAlign(p.CENTER, p.CENTER);
-            p.text("🖐️ Chargement de la détection des mains...", p.width/2, p.height/2 - 30);
+            p.text("🖐️ Loading hand detection...", p.width/2, p.height/2 - 30);
             p.textSize(18);
-            p.text("Placez vos mains devant la caméra", p.width/2, p.height/2 + 10);
+            p.text("Place your hands in front of the camera", p.width/2, p.height/2 + 10);
             
             // Afficher un indicateur de chargement
             p.push();
@@ -288,11 +288,11 @@ export class PlumberGame extends BaseGame {
         p.fill(255);
         p.textSize(24);
         p.textAlign(p.LEFT);
-        p.text("Fuites réparées: " + this.score, 20, 40);
-        p.text("Niveau: " + this.difficulty, 20, 70);
+        p.text("Leaks fixed: " + this.score, 20, 40);
+        p.text("Level: " + this.difficulty, 20, 70);
         
         p.fill(this.waterLevel >= 80 ? 'red' : this.waterLevel >= 50 ? 'orange' : 'white');
-        p.text("Niveau d'eau: " + Math.floor(this.waterLevel) + "%", 20, 100);
+        p.text("Water level: " + Math.floor(this.waterLevel) + "%", 20, 100);
         
         this.drawWaterBar(p);
         
@@ -303,10 +303,10 @@ export class PlumberGame extends BaseGame {
         p.textSize(14);
         p.textAlign(p.CENTER);
         p.fill(this.handL && this.handL.visible ? 'lime' : '#666');
-        p.text("Main G: " + (this.handL && this.handL.visible ? "✓ DÉTECTÉE" : "Non détectée"), 120, p.height - 20);
+        p.text("Left Hand: " + (this.handL && this.handL.visible ? "✓ DETECTED" : "Not detected"), 120, p.height - 20);
         
         p.fill(this.handR && this.handR.visible ? 'lime' : '#666');
-        p.text("Main D: " + (this.handR && this.handR.visible ? "✓ DÉTECTÉE" : "Non détectée"), p.width - 120, p.height - 20);
+        p.text("Right Hand: " + (this.handR && this.handR.visible ? "✓ DETECTED" : "Not detected"), p.width - 120, p.height - 20);
         
         // DEBUG : Afficher la webcam et les points de la main
         this.drawDebug(p);
@@ -332,7 +332,7 @@ export class PlumberGame extends BaseGame {
         p.fill(255, 255, 0);
         p.textAlign(p.CENTER, p.TOP);
         p.textSize(12);
-        p.text("Place ta main sur la fuite + appuie sur la touche :", legendX, legendY - 10);
+        p.text("Place your hand on the leak + press the key:", legendX, legendY - 10);
         
         // Les 4 formes avec leurs touches et couleurs
         p.textSize(14);
@@ -347,7 +347,7 @@ export class PlumberGame extends BaseGame {
         p.fill(255);
         p.noStroke();
         p.textAlign(p.LEFT, p.CENTER);
-        p.text("⬆️ Haut", xPos + 30, legendY + 18);
+        p.text("⬆️ Up", xPos + 30, legendY + 18);
         
         xPos += itemWidth;
         
@@ -370,7 +370,7 @@ export class PlumberGame extends BaseGame {
         p.endShape(p.CLOSE);
         p.fill(255);
         p.noStroke();
-        p.text("⬇️ Bas", xPos + 30, legendY + 18);
+        p.text("⬇️ Down", xPos + 30, legendY + 18);
         
         xPos += itemWidth;
         
@@ -381,7 +381,7 @@ export class PlumberGame extends BaseGame {
         p.ellipse(xPos + 15, legendY + 18, 20, 20);
         p.fill(255);
         p.noStroke();
-        p.text("⬅️ Gauche", xPos + 30, legendY + 18);
+        p.text("⬅️ Left", xPos + 30, legendY + 18);
         
         xPos += itemWidth;
         
@@ -396,7 +396,7 @@ export class PlumberGame extends BaseGame {
         p.endShape(p.CLOSE);
         p.fill(255);
         p.noStroke();
-        p.text("➡️ Droite", xPos + 30, legendY + 18);
+        p.text("➡️ Right", xPos + 30, legendY + 18);
         
         p.pop();
     }
@@ -1197,7 +1197,7 @@ export class PlumberGame extends BaseGame {
     }
 
     /**
-     * Écran Game Over
+     * Game Over Screen
      */
     drawGameOver(p) {
         p.background(0, 50, 100);
@@ -1206,11 +1206,11 @@ export class PlumberGame extends BaseGame {
         p.fill(255, 0, 0);
         p.textSize(60);
         p.textAlign(p.CENTER, p.CENTER);
-        p.text("NOYÉ! 🌊", p.width/2, p.height/2 - 50);
+        p.text("DROWNED! 🌊", p.width/2, p.height/2 - 50);
         
         p.fill(255);
         p.textSize(30);
-        p.text("Score final: " + this.score, p.width/2, p.height/2 + 20);
-        p.text("Niveau atteint: " + this.difficulty, p.width/2, p.height/2 + 60);
+        p.text("Final score: " + this.score, p.width/2, p.height/2 + 20);
+        p.text("Level reached: " + this.difficulty, p.width/2, p.height/2 + 60);
     }
 }
