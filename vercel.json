@@ -3,11 +3,6 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "functions": {
-    "api/*.js": {
-      "runtime": "@vercel/node@3"
-    }
-  },
   "rewrites": [
     { "source": "/api/leaderboard", "destination": "/api/leaderboard" },
     { "source": "/api/score", "destination": "/api/score" },
