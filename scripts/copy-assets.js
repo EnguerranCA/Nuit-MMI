@@ -16,7 +16,9 @@ const distDir = join(rootDir, 'dist');
 const assetsToCopy = [
     { src: 'sound', dest: 'sound' },
     { src: 'fonts', dest: 'fonts' },
+    { src: 'assets', dest: 'assets' },
     { src: 'games/cow-boy/image', dest: 'games/cow-boy/image' },
+    { src: 'games/color-lines/image', dest: 'games/color-lines/image' },
     { src: 'games', dest: 'games', filter: (src) => !src.includes('node_modules') }
 ];
 

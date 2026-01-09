@@ -337,12 +337,13 @@ export class CowboyDuelGame extends BaseGame {
      * Faire apparaître la cible
      */
     spawnTarget(p) {
-        // Position aléatoire mais centrée
+        // Position aléatoire mais dans la moitié basse de l'écran
         const marginX = p.width * 0.25;
-        const marginY = p.height * 0.2;
+        const minY = p.height * 0.5; // Commencer à la moitié de l'écran
+        const maxY = p.height * 0.85; // Laisser de la marge en bas
         
         this.target.x = p.random(marginX, p.width - marginX - this.target.width);
-        this.target.y = p.random(marginY, p.height - marginY - this.target.height);
+        this.target.y = p.random(minY, maxY - this.target.height);
         this.target.visible = true;
         
         console.log(`🎯 Cible à (${Math.round(this.target.x)}, ${Math.round(this.target.y)})`);
@@ -547,7 +548,7 @@ export class CowboyDuelGame extends BaseGame {
         p.fill(0, 0, 0, 180);
         p.stroke(255, 255, 0);
         p.strokeWeight(2);
-        p.rect(debugX - 10, debugY - 10, debugWidth + 20, debugHeight + 100, 10);
+        p.rect(debugX - 10, debugY - 10, debugWidth + 20, debugHeight + 20, 10);
         
         // Afficher la webcam en miroir
         p.push();
@@ -590,28 +591,8 @@ export class CowboyDuelGame extends BaseGame {
             p.pop();
         }
         
-        // Texte d'info
-        p.fill(255);
-        p.noStroke();
-        p.textAlign(p.LEFT, p.TOP);
-        p.textSize(12);
-        p.text(`DEBUG - HandPose`, debugX, debugY + debugHeight + 5);
-        p.text(`Hands detected: ${this.hands.length}`, debugX, debugY + debugHeight + 20);
-        
-        if (this.hands.length > 0 && this.hands[0].keypoints) {
-            const indexTip = this.hands[0].keypoints.find(k => k.name === 'index_finger_tip');
-            if (indexTip) {
-                p.text(`Index: (${Math.round(indexTip.x)}, ${Math.round(indexTip.y)})`, debugX, debugY + debugHeight + 35);
-                p.text(`Confiance: ${(indexTip.confidence * 100).toFixed(0)}%`, debugX, debugY + debugHeight + 50);
-            }
-        } else {
-            p.fill(255, 100, 100);
-            p.text(`No hand detected!`, debugX, debugY + debugHeight + 35);
-            p.text(`Place your hand in front of the camera`, debugX, debugY + debugHeight + 50);
-        }
-        
-        p.fill(255);
-        p.text(`Viseur: (${Math.round(this.crosshair.x)}, ${Math.round(this.crosshair.y)})`, debugX, debugY + debugHeight + 65);
+        // Texte d'info (webcam uniquement, pas de texte debug)
+        // La webcam est affichée dans un cadre sans texte
     }
 
     /**
