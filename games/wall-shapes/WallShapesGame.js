@@ -576,20 +576,14 @@ export class WallShapesGame extends BaseGame {
         };
     }
 
-    /**
-     * Charger la police Lexend via l'API FontFace
-     */
-    async loadLexendFont() {
-        // La police sera chargée via loadFont dans preload de p5
-        console.log('📝 Police Lexend sera chargée dans p5.preload');
-    }
+
+    // Suppression du chargement manuel de la police, géré par CSS/Google Fonts
 
     /**
      * Initialisation du jeu
      */
     async init() {
         console.log('🧱 WallShapesGame - Initialisation');
-        
         return new Promise((resolve, reject) => {
             const sketch = (p) => {
                 p.preload = () => {
@@ -608,16 +602,14 @@ export class WallShapesGame extends BaseGame {
                         flipped: false
                     });
                 };
-                
                 p.setup = () => {
                     // Création du canvas plein écran
                     this.canvas = p.createCanvas(p.windowWidth, p.windowHeight);
                     this.canvas.parent('game-container');
-                    
                     this.previewGraphics = p.createGraphics(200, 150);
-                    p.textFont(this.lexendFont);
+                    // Utiliser la police Outfit comme dans CowboyDuelGame
+                    p.textFont('Outfit');
                     this.connections = this.bodyPose.getSkeleton();
-                    
                     // Initialisation de la webcam
                     this.videoCapture = p.createCapture(p.VIDEO, (stream) => {
                         if (stream) {
@@ -626,7 +618,6 @@ export class WallShapesGame extends BaseGame {
                     });
                     this.videoCapture.size(640, 480);
                     this.videoCapture.hide();
-                    
                     // Fallback si pas de stream après 2 secondes
                     setTimeout(() => {
                         if (this.gamePhase === 'loading') {
@@ -634,23 +625,18 @@ export class WallShapesGame extends BaseGame {
                             this.onCameraReady(p);
                         }
                     }, 2000);
-                    
                     resolve();
                 };
-
                 p.draw = () => {
                     this.update(p);
                 };
-
                 p.keyPressed = () => {
                     this.onKeyPressed(p.key);
                 };
-
                 p.windowResized = () => {
                     p.resizeCanvas(p.windowWidth, p.windowHeight);
                 };
             };
-
             window.p5Instance = new p5(sketch);
         });
     }
@@ -741,7 +727,7 @@ export class WallShapesGame extends BaseGame {
             p.push();
             p.fill(255);
             p.textAlign(p.CENTER, p.CENTER);
-            p.textFont(this.lexendFont);
+            p.textFont('Outfit');
             p.textSize(24);
             p.textStyle(p.BOLD);
             p.text('En attente de détection de pose...', p.width/2, p.height/2 - 50);
@@ -1156,7 +1142,7 @@ export class WallShapesGame extends BaseGame {
         
         p.fill(100, 200, 255, 200);
         p.noStroke();
-        p.textFont(this.lexendFont);
+        p.textFont('Outfit');
         p.textSize(11);
         p.textAlign(p.LEFT);
         p.textStyle(p.BOLD);
@@ -1193,7 +1179,7 @@ export class WallShapesGame extends BaseGame {
             
             p.fill(255, 255, 255, 120);
             p.textAlign(p.RIGHT);
-            p.textFont(this.lexendFont);
+            p.textFont('Outfit');
             p.textSize(11);
             p.text(nearestWall.poseType.name + ' ' + p.floor(matchScore) + '%', p.width - 30, p.height - 44);
             p.pop();
@@ -1205,23 +1191,20 @@ export class WallShapesGame extends BaseGame {
      */
     drawHUD(p) {
         p.push();
+        p.textFont('Outfit');
         p.fill(255);
         p.noStroke();
         p.textAlign(p.LEFT, p.TOP);
         p.textSize(16);
-        
         // Score
         p.fill(74, 222, 128);
         p.text('Score: ' + this.score, 20, 20);
-        
         // Level
         p.fill(251, 191, 36);
         p.text('Level: ' + this.level, 20, 45);
-        
         // Lives
         p.fill(248, 113, 113);
         p.text('Lives: ' + this.lives, 20, 70);
-        
         p.pop();
     }
 
@@ -1241,16 +1224,13 @@ export class WallShapesGame extends BaseGame {
         if (this.feedbackTimer > 0) {
             p.push();
             p.textAlign(p.CENTER, p.CENTER);
-            p.textFont(this.lexendFont);
-            
+            p.textFont('Outfit');
             let alpha = p.map(this.feedbackTimer, 50, 0, 255, 0);
             let size = p.map(this.feedbackTimer, 50, 0, 32, 42);
             let yOffset = p.map(this.feedbackTimer, 50, 0, 0, -15);
-            
             // Position en haut au centre de l'écran
             const feedbackX = p.width / 2;
             const feedbackY = 100 + yOffset;
-            
             p.textSize(size);
             p.textStyle(p.BOLD);
             p.fill(p.red(this.feedbackColor), p.green(this.feedbackColor), p.blue(this.feedbackColor), alpha);
@@ -1414,7 +1394,7 @@ class PoseWall {
         p.noStroke();
         p.fill(255);
         p.textAlign(p.CENTER, p.CENTER);
-        p.textFont(this.lexendFont);
+        p.textFont('Outfit');
         p.textSize(22 * scale);
         p.textStyle(p.BOLD);
         p.text(this.poseType.name, 0, -h/2 - 30 * scale);
