@@ -79,10 +79,10 @@ export class PlumberGame extends BaseGame {
         const content = TutorialSystem.generateCards({
             color: '#67e8f9',
             cards: [
-                { image: 'https://placehold.co/400x400/333/FFF?text=Aim+Hand', text: 'Use The Center Of Your Hands To Aim The Pipes' },
-                { image: 'https://placehold.co/400x400/C5965A/FFF?text=Target+Rope', text: 'Press The Good Button' },
-                { image: 'https://placehold.co/400x400/555/FFF?text=Repair+Leak', text: 'Repair The Leak' },
-                { image: 'https://placehold.co/400x400/eee/333?text=Score+200', text: 'Try To Get The Best Score' }
+                { image: '../../assets/plumber1.png', text: 'Use The Center Of Your Hands To Aim The Pipes' },
+                { image: '../../assets/plumber2.png', text: 'Press The Good Button' },
+                { image: '../../assets/plumber3.png', text: 'Repair The Leak' },
+                { image: '../../assets/plumber4.png', text: 'Try To Get The Best Score' }
             ]
         });
 

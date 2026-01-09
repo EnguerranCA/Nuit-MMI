@@ -83,9 +83,9 @@ export class ColorLinesGame extends BaseGame {
         const content = TutorialSystem.generateCards({
             color: '#ff4757',
             cards: [
-                { image: 'https://placehold.co/400x400/333/FFF?text=Timing+Pose', text: 'Let Press The Right Button On The Good Timing' },
-                { image: 'https://placehold.co/400x400/443333/FFF?text=Rhythm+24%25', text: 'Keep The Rhythm' },
-                { image: 'https://placehold.co/400x400/eee/333?text=Score+200', text: 'Try To Get The Best Score', span: 2 }
+                { image: '../../assets/color1.png', text: 'Let Press The Right Button On The Good Timing' },
+                { image: '../../assets/color2.png', text: 'Keep The Rhythm' },
+                { image: '../../assets/color3.png   ', text: 'Try To Get The Best Score', span: 2 }
             ]
         });
 

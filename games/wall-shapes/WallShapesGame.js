@@ -545,10 +545,10 @@ export class WallShapesGame extends BaseGame {
         const content = TutorialSystem.generateCards({
             color: '#fdba74',
             cards: [
-                { image: 'https://placehold.co/400x400/333/FFF?text=Body+Shape', text: 'Use All Your Body To Match The Shape' },
-                { image: 'https://placehold.co/400x400/059669/FFF?text=Green+Shape', text: 'When It\'s Green You Are Good But Keep Posing' },
-                { image: 'https://placehold.co/400x400/111/FFF?text=Hearts+Lives', text: 'Be Careful ! It Speeds Up Over Time' },
-                { image: 'https://placehold.co/400x400/eee/333?text=Score+180', text: 'Try To Get The Best Score' }
+                { image: '../../assets/pose1.png', text: 'Use All Your Body To Match The Shape' },
+                { image: '../../assets/pose2.png', text: 'When It\'s Green You Are Good But Keep Posing' },
+                { image: '../../assets/pose3.png', text: 'Be Careful ! It Speeds Up Over Time' },
+                { image: '../../assets/pose4.png', text: 'Try To Get The Best Score' }
             ]
         });
 

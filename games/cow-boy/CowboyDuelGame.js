@@ -69,10 +69,10 @@ export class CowboyDuelGame extends BaseGame {
         const content = TutorialSystem.generateCards({
             color: '#8b5cf6',
             cards: [
-                { image: 'https://placehold.co/400x400/333/FFF?text=Fingers+Gun', text: 'Make Gun With Your Fingers' },
-                { image: 'https://placehold.co/400x400/C5965A/FFF?text=Target+Opps', text: 'Target The Opps With Your Finger' },
-                { image: 'https://placehold.co/400x400/555/FFF?text=BANG!', text: 'Press Any Button To Shoot' },
-                { image: 'https://placehold.co/400x400/eee/333?text=Score', text: 'Try To Get The Best Score' }
+                { image: '../../assets/cowboy1.png', text: 'Make Gun With Your Fingers' },
+                { image: '../../assets/cowboy2.png', text: 'Target The Opps With Your Finger' },
+                { image: '../../assets/cowboy3.png', text: 'Press Any Button To Shoot' },
+                { image: '../../assets/cowboy4.png', text: 'Try To Get The Best Score' }
             ]
         });
 
