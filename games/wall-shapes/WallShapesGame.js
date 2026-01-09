@@ -395,13 +395,6 @@ export class WallShapesGame extends BaseGame {
         // Police
         this.lexendFont = null;
         
-        // Sons
-        this.soundMusic = null;
-        this.soundSuccess = null;
-        this.soundHeartbeat = null;
-        this.musicVolume = 0.4;
-        this.heartbeatPlaying = false;
-        
         // ML5 BodyPose
         this.bodyPose = null;
         this.poses = [];
@@ -506,15 +499,11 @@ export class WallShapesGame extends BaseGame {
                 </div>
                 <!-- Lives -->
                 <div class="bg-black/60 backdrop-blur-md rounded-xl px-4 py-2 border border-white/10">
-                    <span class="text-xs text-white/60 uppercase tracking-wider">Lives</span>
+                    <span class="text-xs text-white/60 uppercase tracking-wider">Vies</span>
                     <p id="ws-lives" class="text-2xl font-bold text-red-400">${'❤️'.repeat(this.lives)}</p>
                 </div>
             </div>
             
-            <!-- Status à droite -->
-            <div class="bg-black/60 backdrop-blur-md rounded-xl px-4 py-2 border border-white/10">
-                <span id="ws-status" class="text-sm text-white/70">Ready</span>
-            </div>
         `;
         
         // Ajouter au game-container
@@ -536,18 +525,7 @@ export class WallShapesGame extends BaseGame {
         
         if (levelEl) levelEl.textContent = this.level;
         if (livesEl) livesEl.textContent = '❤️'.repeat(Math.max(0, this.lives));
-        if (statusEl) {
-            switch (this.gamePhase) {
-                case 'waiting_pose':
-                    statusEl.textContent = '📷 Waiting for pose...';
-                    break;
-                case 'playing':
-                    statusEl.textContent = '🎮 Playing';
-                    break;
-                default:
-                    statusEl.textContent = 'Ready';
-            }
-        }
+
     }
 
     /**
@@ -561,13 +539,13 @@ export class WallShapesGame extends BaseGame {
     }
 
     /**
-     * Tutorial information
+     * Informations du tutoriel
      */
     static getTutorial() {
         const content = TutorialSystem.generateML5Tutorial({
             title: 'Pose Wall',
-            objective: 'Reproduce the pose shown on the wall before it arrives to pass through!',
-            tip: 'Make sure you have good lighting and enough space for your full body to be visible.'
+            objective: 'Reproduis la pose affichée sur le mur avant qu\'il n\'arrive pour passer à travers !',
+            tip: 'Assure-toi d\'avoir un bon éclairage et suffisamment de recul pour que tout ton corps soit visible.'
         });
 
         return {
@@ -587,14 +565,6 @@ export class WallShapesGame extends BaseGame {
         return new Promise((resolve, reject) => {
             const sketch = (p) => {
                 p.preload = () => {
-                    // Charger la police Lexend
-                    this.lexendFont = p.loadFont('/fonts/Lexend/Lexend-VariableFont_wght.ttf');
-                    
-                    // Charger les sons
-                    this.soundMusic = p.loadSound('./sound/ost synthwave.mp3');
-                    this.soundSuccess = p.loadSound('./sound/success.mp3');
-                    this.soundHeartbeat = p.loadSound('./sound/heartbeat.mp3');
-                    
                     // Charger BodyPose dans preload
                     this.bodyPose = ml5.bodyPose('MoveNet', {
                         modelType: 'SINGLEPOSE_LIGHTNING',
@@ -666,13 +636,6 @@ export class WallShapesGame extends BaseGame {
         super.start();
         console.log('▶️ WallShapesGame - Démarrage');
         
-        // Lancer la musique synthwave en boucle
-        if (this.soundMusic && !this.soundMusic.isPlaying()) {
-            this.soundMusic.setVolume(this.musicVolume);
-            this.soundMusic.loop();
-            console.log('🎵 Musique synthwave lancée');
-        }
-        
         // Reset game state
         this.score = 0;
         this.level = 1;
@@ -730,11 +693,11 @@ export class WallShapesGame extends BaseGame {
             p.textFont('Outfit');
             p.textSize(24);
             p.textStyle(p.BOLD);
-            p.text('Waiting for pose detection...', p.width/2, p.height/2 - 50);
+            p.text('En attente de détection de pose...', p.width/2, p.height/2 - 50);
             p.textSize(16);
             p.textStyle(p.NORMAL);
             p.fill(200);
-            p.text('Stand in front of the camera', p.width/2, p.height/2);
+            p.text('Placez-vous devant la caméra', p.width/2, p.height/2);
             p.pop();
             
             // Passer en mode playing dès que poseReady est true
@@ -761,42 +724,12 @@ export class WallShapesGame extends BaseGame {
                 wall.update(this.wallSpeed);
                 wall.draw(p, playerPose);
                 
-                // Heartbeat quand le mur est proche (z < 300)
-                if (wall.z < 300 && wall.z > 0 && !wall.scored) {
-                    if (!this.heartbeatPlaying && this.soundHeartbeat) {
-                        this.soundHeartbeat.setVolume(0.5);
-                        this.soundHeartbeat.loop();
-                        this.heartbeatPlaying = true;
-                        // Baisser le volume de la musique
-                        if (this.soundMusic) {
-                            this.soundMusic.setVolume(0.15);
-                        }
-                    }
-                }
-                
                 if (wall.isAtPlayer() && !wall.scored) {
                     wall.scored = true;
-                    
-                    // Arrêter le heartbeat
-                    if (this.heartbeatPlaying && this.soundHeartbeat) {
-                        this.soundHeartbeat.stop();
-                        this.heartbeatPlaying = false;
-                        // Remonter le volume de la musique
-                        if (this.soundMusic) {
-                            this.soundMusic.setVolume(this.musicVolume);
-                        }
-                    }
-                    
                     const isMatch = wall.checkBodyMatch(p, playerPose);
                     if (isMatch) {
                         const points = Math.floor(wall.matchScore);
                         this.addScore(points);
-                        
-                        // Jouer le son de succès
-                        if (this.soundSuccess) {
-                            this.soundSuccess.setVolume(0.6);
-                            this.soundSuccess.play();
-                        }
                         
                         if (wall.matchScore >= 95) {
                             this.showFeedback(p, 'PERFECT! +' + points, p.color(...COLORS.success));
@@ -1081,74 +1014,59 @@ export class WallShapesGame extends BaseGame {
      * Dessiner l'aperçu webcam
      */
     drawWebcamPreview(p, pose) {
-        const previewW = 240;
-        const previewH = 180;
-        const previewX = 15;
-        const previewY = p.height - previewH - 15;
-        
-        this.previewGraphics.clear();
-        this.previewGraphics.background(20, 20, 25);
-        
-        this.previewGraphics.push();
-        this.previewGraphics.translate(previewW, 0);
-        this.previewGraphics.scale(-1, 1);
-        if (this.videoCapture && this.videoCapture.elt && this.videoCapture.elt.readyState >= 2) {
-            this.previewGraphics.image(this.videoCapture, 0, 0, previewW, previewH);
+        // Paramètres du cadre
+        const camW = 240;
+        const camH = 180;
+        const camX = p.width - camW - 20;
+        const camY = 20;
+
+        // Fond semi-transparent et cadre (collé au bas de la webcam)
+        p.fill(0, 0, 0, 180);
+        p.stroke(255, 255, 0);
+        p.strokeWeight(2);
+        p.rect(camX - 10, camY - 10, camW + 20, camH + 20, 10);
+
+        // Afficher la webcam en miroir
+        p.push();
+        p.translate(camX + camW, camY);
+        p.scale(-1, 1);
+        if (this.videoCapture) {
+            p.image(this.videoCapture, 0, 0, camW, camH);
         }
-        this.previewGraphics.pop();
-        
-        // Draw skeleton overlay
+        p.pop();
+
+        // Overlay squelette si pose détectée (même sens que la vidéo miroir)
         if (pose && this.connections) {
-            this.previewGraphics.stroke(74, 222, 128, 220);
-            this.previewGraphics.strokeWeight(3);
-            this.previewGraphics.strokeCap(p.ROUND);
-            
-            const scaleX = previewW / 800;
-            const scaleY = previewH / 600;
-            
+            p.push();
+            p.translate(camX + camW, camY);
+            p.scale(-1, 1);
+            const scaleX = camW / 800;
+            const scaleY = camH / 600;
+            p.stroke(74, 222, 128, 220);
+            p.strokeWeight(3);
+            p.strokeCap(p.ROUND);
             for (let connection of this.connections) {
                 let pointA = pose.keypoints[connection[0]];
                 let pointB = pose.keypoints[connection[1]];
-                
                 if (pointA.confidence > 0.1 && pointB.confidence > 0.1) {
-                    let ax = previewW - (pointA.x * scaleX);
+                    let ax = (pointA.x * scaleX);
                     let ay = pointA.y * scaleY;
-                    let bx = previewW - (pointB.x * scaleX);
+                    let bx = (pointB.x * scaleX);
                     let by = pointB.y * scaleY;
-                    this.previewGraphics.line(ax, ay, bx, by);
+                    p.line(ax, ay, bx, by);
                 }
             }
-            
-            this.previewGraphics.fill(255, 255, 255);
-            this.previewGraphics.stroke(74, 222, 128);
-            this.previewGraphics.strokeWeight(2);
             for (let keypoint of pose.keypoints) {
                 if (keypoint.confidence > 0.1) {
-                    let x = previewW - (keypoint.x * scaleX);
+                    let x = (keypoint.x * scaleX);
                     let y = keypoint.y * scaleY;
-                    this.previewGraphics.circle(x, y, 8);
+                    p.fill(255);
+                    p.noStroke();
+                    p.ellipse(x, y, 8, 8);
                 }
             }
+            p.pop();
         }
-        
-        // Draw the preview on main canvas
-        p.push();
-        p.image(this.previewGraphics, previewX, previewY);
-        
-        p.noFill();
-        p.stroke(100, 200, 255, 180);
-        p.strokeWeight(2);
-        p.rect(previewX, previewY, previewW, previewH, 8);
-        
-        p.fill(100, 200, 255, 200);
-        p.noStroke();
-        p.textFont('Outfit');
-        p.textSize(11);
-        p.textAlign(p.LEFT);
-        p.textStyle(p.BOLD);
-        p.text('WEBCAM PREVIEW', previewX + 10, previewY + 20);
-        p.textStyle(p.NORMAL);
-        p.pop();
     }
 
     /**
@@ -1279,19 +1197,6 @@ export class WallShapesGame extends BaseGame {
      */
     cleanup() {
         console.log('🧹 WallShapesGame - Nettoyage');
-        
-        // Arrêter tous les sons
-        if (this.soundMusic && this.soundMusic.isPlaying()) {
-            this.soundMusic.stop();
-            console.log('🔇 Musique synthwave arrêtée');
-        }
-        if (this.soundHeartbeat && this.soundHeartbeat.isPlaying()) {
-            this.soundHeartbeat.stop();
-        }
-        if (this.soundSuccess && this.soundSuccess.isPlaying()) {
-            this.soundSuccess.stop();
-        }
-        this.heartbeatPlaying = false;
         
         // Supprimer le HUD
         this.removeHUD();
@@ -1574,3 +1479,4 @@ class PoseWall {
         return this.z <= -100;
     }
 }
+

@@ -86,26 +86,83 @@ class GameManager {
         // Affichage du menu après un court délai
         setTimeout(() => {
             this.showScreen('menu');
-            
-            // Animer les éléments du menu après l'apparition
-            gsap.from('#menu-screen h1', {
+
+            // Timeline orchestrée pour le menu
+            const menuTl = gsap.timeline();
+
+            // Blobs décoratifs - apparition douce avec rotation
+            menuTl.from('#menu-screen img', {
                 scale: 0,
-                rotation: -10,
+                rotation: -180,
                 opacity: 0,
-                duration: 0.8,
-                delay: 0.3,
-                ease: 'elastic.out(1, 0.5)',
-                clearProps: 'all' // Nettoyer les propriétés inline après animation
-            });
-            
-            gsap.from('#menu-screen button', {
-                x: -100,
+                duration: 1.2,
+                stagger: 0.15,
+                ease: 'elastic.out(1, 0.4)'
+            }, 0);
+
+            // Bouton Play - apparition simple
+            menuTl.from('#btn-start', {
+                opacity: 0,
+                duration: 0.5,
+                ease: 'power2.out',
+                clearProps: 'opacity'
+            }, 0.3);
+
+            // Cartes de jeux - cascade élégante avec rebond
+            menuTl.from('#gallery-games > div', {
+                y: 80,
+                scale: 0.8,
                 opacity: 0,
                 duration: 0.6,
-                delay: 0.6,
-                stagger: 0.15,
-                ease: 'back.out(1.7)',
-                clearProps: 'all'
+                stagger: {
+                    each: 0.1,
+                    from: 'start'
+                },
+                ease: 'back.out(1.4)',
+                clearProps: 'transform,opacity'  // Ne pas toucher au backgroundColor
+            }, 0.5);
+
+            // Bouton leaderboard - slide + rebond
+            menuTl.from('#btn-leaderboard', {
+                x: 80,
+                y: 80,
+                scale: 0.5,
+                rotation: 45,
+                opacity: 0,
+                duration: 0.8,
+                ease: 'back.out(2)',
+                onComplete: () => {
+                    // Animation flottante continue
+                    gsap.to('#btn-leaderboard', {
+                        y: -8,
+                        duration: 1.5,
+                        repeat: -1,
+                        yoyo: true,
+                        ease: 'sine.inOut'
+                    });
+                }
+            }, 0.9);
+
+            // Hover animations sur les cartes
+            document.querySelectorAll('#gallery-games > div').forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    gsap.to(card, {
+                        scale: 1.05,
+                        rotation: gsap.utils.random(-2, 2),
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                        duration: 0.3,
+                        ease: 'power2.out'
+                    });
+                });
+                card.addEventListener('mouseleave', () => {
+                    gsap.to(card, {
+                        scale: 1,
+                        rotation: 0,
+                        boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                        duration: 0.3,
+                        ease: 'power2.out'
+                    });
+                });
             });
         }, 1500);
     }
@@ -151,21 +208,53 @@ class GameManager {
 
         gallery.innerHTML = ''; // Vider la galerie
 
+        // Couleurs pour chaque jeu
+        const gameColors = {
+            'wall-shapes': '#A3FF56',
+            'plumber': '#54D8FF',
+            'cow-boy': '#9755FF',
+            'color-lines': '#FF3246'
+        };
+
+        // Noms affichés pour chaque jeu
+        const gameNames = {
+            'wall-shapes': 'Wall Shapes',
+            'plumber': 'Fix The Leaks',
+            'cow-boy': 'Cowboy Reflex',
+            'color-lines': 'Color Lines'
+        };
+
         Object.entries(this.gamesRegistry).forEach(([gameId, GameClass]) => {
-            const tutorialInfo = GameClass.getTutorial();
-            const li = document.createElement('li');
-            li.className = 'game-item';
+            const color = gameColors[gameId] || '#FFB347';
+            const displayName = gameNames[gameId] || gameId;
             
-            const button = document.createElement('button');
-            button.className = 'px-6 py-3 bg-white text-text text-lg font-outfit font-bold rounded-2xl hover:scale-105 hover:bg-primary hover:text-white transition-all border-2 border-primary';
-            button.textContent = tutorialInfo.title || gameId;
-            button.addEventListener('click', () => this.startSingleGame(gameId));
+            const card = document.createElement('div');
+            card.className = 'group p-3 rounded-[2rem] pb-4 shadow-lg transition-transform hover:-translate-y-1 cursor-pointer';
+            card.style.backgroundColor = color;
             
-            li.appendChild(button);
-            gallery.appendChild(li);
+            // Images pour chaque jeu
+            const gameImages = {
+                'wall-shapes': './assets/PersonIllustration2.png',
+                'plumber': './assets/PersonIllustration3.png',
+                'cow-boy': './assets/PersonIllustration1.png',
+                'color-lines': './assets/PersonStar.png'
+            };
+            const imgSrc = gameImages[gameId] || '';
+            card.innerHTML = `
+                <div class="bg-[#F2F0E9] w-full h-40 rounded-2xl mb-3 relative overflow-hidden border-2 border-black/5 group-hover:border-black/10 transition-colors flex items-center justify-center">
+                    ${imgSrc ? `<img src='${imgSrc}' alt='' class='absolute w-400 h-400 object-contain pointer-events-none' />` : `<span class='text-4xl opacity-50'>🎮</span>`}
+                </div>
+                <h2 class="text-black/80 font-lexend font-semibold text-lg uppercase tracking-wide ml-2">
+                    ${displayName}
+                </h2>
+            `;
+            card.addEventListener('click', () => {
+                this.startSingleGame(gameId);
+            });
+            gallery.appendChild(card);
         });
 
-        console.log('✅ Galerie des jeux générée:', Object.keys(this.gamesRegistry));
+        console.log('✅ Game gallery generated:', Object.keys(this.gamesRegistry));
     }
 
     /**
@@ -252,30 +341,34 @@ class GameManager {
         });
 
         if (currentScreen && currentScreen !== newScreen) {
-            // Animer la sortie de l'écran actuel
+            // Animation de disparition fluide avec blur effect
             tl.to(currentScreen, {
                 opacity: 0,
-                scale: 0.95,
-                duration: 0.3,
-                ease: 'power2.in',
+                scale: 0.85,
+                y: 60,
+                filter: 'blur(10px)',
+                duration: 0.4,
+                ease: 'power3.in',
                 onComplete: () => {
                     currentScreen.classList.add('hidden');
-                    gsap.set(currentScreen, { opacity: 1, scale: 1 }); // Reset pour la prochaine fois
+                    gsap.set(currentScreen, { opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' });
                 }
             });
         }
 
         // Préparer le nouvel écran
-        gsap.set(newScreen, { opacity: 0, scale: 1.05 });
+        gsap.set(newScreen, { opacity: 0, scale: 1.1, y: -50, filter: 'blur(8px)' });
         newScreen.classList.remove('hidden');
 
-        // Animer l'entrée du nouvel écran
+        // Animation d'apparition dynamique
         tl.to(newScreen, {
             opacity: 1,
             scale: 1,
-            duration: 0.4,
-            ease: 'power2.out'
-        }, currentScreen ? '-=0.1' : 0); // Légère superposition si transition depuis un autre écran
+            y: 0,
+            filter: 'blur(0px)',
+            duration: 0.6,
+            ease: 'expo.out'
+        }, currentScreen ? '-=0.15' : 0);
     }
 
     /**

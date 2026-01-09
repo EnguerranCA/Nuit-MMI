@@ -10,10 +10,10 @@ import { TutorialSystem } from '../TutorialSystem.js';
 
 // Lane colors with their hex codes and associated images/keys
 const LANE_COLORS = [
-    { name: 'orange', hex: '#FFB755', rgb: [255, 183, 85], key: 'ArrowUp', icon: 'star-button.svg' },
-    { name: 'green', hex: '#A3FF56', rgb: [163, 255, 86], key: 'ArrowRight', icon: 'circle-button.svg' },
-    { name: 'blue', hex: '#54D8FF', rgb: [84, 216, 255], key: 'ArrowDown', icon: 'rectangle-button.svg' },
-    { name: 'red', hex: '#FF3246', rgb: [255, 50, 70], key: 'ArrowLeft', icon: 'triangle-button.svg' }
+    { name: 'orange', hex: '#FFB755', rgb: [255, 183, 85], key: 'ArrowUp', icon: 'star-button.svg', character: 'PersonStar.png' },
+    { name: 'green', hex: '#A3FF56', rgb: [163, 255, 86], key: 'ArrowRight', icon: 'circle-button.svg', character: 'PersonRound.png' },
+    { name: 'blue', hex: '#54D8FF', rgb: [84, 216, 255], key: 'ArrowDown', icon: 'rectangle-button.svg', character: 'PersonSquare.png' },
+    { name: 'red', hex: '#FF3246', rgb: [255, 50, 70], key: 'ArrowLeft', icon: 'triangle-button.svg', character: 'PersonTriangle.png' }
 ];
 
 const LANE_OPACITY = 0.15; // Transparency for lane backgrounds
@@ -33,6 +33,13 @@ export class ColorLinesGame extends BaseGame {
         
         // Lane icons (SVG images)
         this.laneIcons = [];
+        
+        // Character images for each lane
+        this.characterImages = [];
+        this.characterSize = 100; // Size of character sprites
+        
+        // Animation state for characters
+        this.animationTime = 0;
         
         // Active lane (controlled by arrow keys) - null means no lane selected
         this.activeLaneIndex = null;
@@ -99,6 +106,13 @@ export class ColorLinesGame extends BaseGame {
                     for (let i = 0; i < LANE_COLORS.length; i++) {
                         const icon = p.loadImage(`./games/color-lines/image/${LANE_COLORS[i].icon}`);
                         this.laneIcons.push(icon);
+                    }
+                    
+                    // Load character images
+                    this.characterImages = [];
+                    for (let i = 0; i < LANE_COLORS.length; i++) {
+                        const character = p.loadImage(`./assets/${LANE_COLORS[i].character}`);
+                        this.characterImages.push(character);
                     }
                     
                     // Load music
@@ -209,6 +223,9 @@ export class ColorLinesGame extends BaseGame {
     update(p) {
         if (!this.isRunning) return;
         
+        // Update animation time
+        this.animationTime += 0.05;
+        
         // Draw background
         this.drawBackground(p);
         
@@ -244,30 +261,70 @@ export class ColorLinesGame extends BaseGame {
     }
 
     /**
-     * Draw lane icons (SVGs) at the left of each lane
+     * Draw characters at the left of each lane (replacing icons)
      */
     drawLaneIcons(p) {
         for (let i = 0; i < this.lanes.length; i++) {
             const lane = this.lanes[i];
-            const icon = this.laneIcons[i];
+            const characterImg = this.characterImages[i];
             
-            if (icon) {
+            if (characterImg) {
                 const isActive = this.activeLaneIndex === i;
+                
+                // Calculate bounce animation
+                const bouncePhase = this.animationTime + i * 0.8;
+                
+                // Idle bounce: small, gentle
+                let bounceY = Math.sin(bouncePhase * 2) * 5;
+                let scale = 1.0;
+                let rotation = 0;
+                
+                // Active animation: bigger bounce, scale up, slight rotation
+                if (isActive) {
+                    bounceY = Math.sin(bouncePhase * 6) * 15;
+                    scale = 1.2 + Math.sin(bouncePhase * 4) * 0.1;
+                    rotation = Math.sin(bouncePhase * 8) * 0.15;
+                }
+                
+                const charSize = this.characterSize * scale;
+                const charX = this.iconX;
+                const charY = lane.centerY + bounceY;
+                
+                p.push();
+                p.imageMode(p.CENTER);
+                p.translate(charX, charY);
+                p.rotate(rotation);
+                
+                // Draw light background circle behind the character
+                const bgRadius = charSize * 1;
+                p.noStroke();
+                if (isActive) {
+                    // Active: colored glow background
+                    p.fill(lane.color.rgb[0], lane.color.rgb[1], lane.color.rgb[2], 80);
+                    p.ellipse(0, 5, bgRadius * 1.4, bgRadius * 1.2);
+                    p.fill(255, 255, 255, 200);
+                } else {
+                    // Idle: soft white/gray background
+                    p.fill(200, 200, 200, 200);
+                }
+                p.ellipse(0, 5, bgRadius * 1.2, bgRadius);
                 
                 // Draw glow if active
                 if (isActive) {
                     p.tint(lane.color.rgb[0], lane.color.rgb[1], lane.color.rgb[2], 150);
-                    p.image(icon, this.iconX - this.iconSize/2 - 5, lane.centerY - this.iconSize/2 - 5, this.iconSize + 10, this.iconSize + 10);
+                    p.image(characterImg, 0, 0, charSize + 20, charSize + 20);
                 }
                 
-                // Draw icon with color tint if active
+                // Draw character with tint
                 if (isActive) {
-                    p.tint(255, 255, 255);
+                    p.noTint();
                 } else {
-                    p.tint(150, 150, 150, 180);
+                    p.tint(200, 200, 200, 220);
                 }
-                p.image(icon, this.iconX - this.iconSize/2, lane.centerY - this.iconSize/2, this.iconSize, this.iconSize);
+                p.image(characterImg, 0, 0, charSize, charSize);
                 p.noTint();
+                
+                p.pop();
             }
         }
     }
@@ -545,6 +602,7 @@ export class ColorLinesGame extends BaseGame {
             }
         }
     }
+
     /**
      * Draw the HUD (only game over message, no overlay during gameplay)
      */

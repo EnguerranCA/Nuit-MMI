@@ -1,5 +1,5 @@
 /* Import des fonts Google - doit être en premier */
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Climate+Crisis:YEAR@1979&family=Lexend:wght@100..900&family=Outfit:wght@100..900&display=swap');
 
 @import "tailwindcss";
 
@@ -24,15 +24,17 @@
   --color-text: var(--color-black);
   
   /* Fonts */
+  --font-climate-crisis: 'Climate Crisis', sans-serif;
   --font-lexend: 'Lexend', sans-serif;
   --font-outfit: 'Outfit', sans-serif;
   
   /* Font families pour Tailwind */
   --font-family-sans: var(--font-lexend);
-  --font-family-display: var(--font-outfit);
+  --font-family-display: var(--font-climate-crisis);
 }
 
 body {
+  background-color: var(--color-background);
   color: var(--color-text);
   font-family: var(--font-lexend);
 }
@@ -40,11 +42,10 @@ body {
 /* Landing page uses bg-light-black via Tailwind class */
 /* Game pages can override with their own background */
 
-/* Titres avec Outfit */
+/* Titres avec Climate Crisis */
 h1, h2, h3, h4, h5, h6,
 .font-display {
-  font-family: var(--font-outfit);
-  font-weight: 700;
+  font-family: var(--font-climate-crisis);
 }
 
 
@@ -66,4 +67,8 @@ h1, h2, h3, h4, h5, h6,
 
 .font-outfit {
   font-family: var(--font-outfit);
+}
+
+.font-climate-crisis {
+  font-family: var(--font-climate-crisis);
 }
