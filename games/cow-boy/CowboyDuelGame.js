@@ -21,6 +21,14 @@ export class CowboyDuelGame extends BaseGame {
         this.imgTarget = null;
         this.imgGun = null;
         
+        // Sons
+        this.soundMusic = null;
+        this.soundHeartbeat = null;
+        this.soundGunshot = null;
+        this.soundSuccess = null;
+        this.soundDefeat = null;
+        this.musicVolume = 0.5; // Volume normal de la musique
+        
         // État du jeu
         this.gamePhase = 'waiting'; // waiting, ready, draw, shooting, hit, miss
         this.phaseTimer = 0;
@@ -94,6 +102,13 @@ export class CowboyDuelGame extends BaseGame {
                     this.imgGun = p.loadImage('./games/cow-boy/image/gun first person.png');
                     this.imgBackground = p.loadImage('./games/cow-boy/image/background.jpg');
                     
+                    // Chargement des sons (dossier /sound à la racine)
+                    this.soundMusic = p.loadSound('./sound/ost western.mp3');
+                    this.soundHeartbeat = p.loadSound('./sound/heartbeat.mp3');
+                    this.soundGunshot = p.loadSound('./sound/gunshot.mp3');
+                    this.soundSuccess = p.loadSound('./sound/success.mp3');
+                    this.soundDefeat = p.loadSound('./sound/defeat.mp3');
+                    
                     // Charger HandPose dans preload (recommandé par ML5)
                     this.handPose = ml5.handPose();
                 };
@@ -149,6 +164,13 @@ export class CowboyDuelGame extends BaseGame {
     start() {
         super.start();
         console.log('▶️ CowboyDuelGame - Démarrage');
+        
+        // Lancer la musique western en boucle
+        if (this.soundMusic && !this.soundMusic.isPlaying()) {
+            this.soundMusic.setVolume(this.musicVolume);
+            this.soundMusic.loop();
+            console.log('🎵 Musique western lancée');
+        }
         
         // Démarrer la première manche
         this.startNewRound();
@@ -236,6 +258,17 @@ export class CowboyDuelGame extends BaseGame {
         
         switch (this.gamePhase) {
             case 'waiting':
+                // Baisser la musique dès le début de la fermeture des volets
+                if (this.phaseTimer === 1) {
+                    if (this.soundMusic) {
+                        this.soundMusic.setVolume(0.15);
+                    }
+                    if (this.soundHeartbeat && !this.soundHeartbeat.isPlaying()) {
+                        this.soundHeartbeat.setVolume(0.7);
+                        this.soundHeartbeat.loop();
+                    }
+                }
+                
                 // Fermeture des volets
                 this.shutterProgress = p.min(1, this.shutterProgress + 0.05);
                 if (this.shutterProgress >= 1 && this.phaseTimer > 60) {
@@ -245,12 +278,20 @@ export class CowboyDuelGame extends BaseGame {
                 break;
                 
             case 'ready':
-                // Afficher "GET READY" pendant 1-2 secondes aléatoires
-                const readyDuration = p.random(60, 120);
+                // Afficher "GET READY" pendant 2-4 secondes aléatoires (volets fermés plus longtemps)
+                const readyDuration = p.random(120, 240); // 2-4 secondes au lieu de 1-2
                 if (this.phaseTimer > readyDuration) {
                     this.gamePhase = 'draw';
                     this.phaseTimer = 0;
                     this.spawnTarget(p);
+                    
+                    // Arrêter le heartbeat et remonter le volume de la musique
+                    if (this.soundHeartbeat && this.soundHeartbeat.isPlaying()) {
+                        this.soundHeartbeat.stop();
+                    }
+                    if (this.soundMusic) {
+                        this.soundMusic.setVolume(this.musicVolume);
+                    }
                 }
                 break;
                 
@@ -272,6 +313,7 @@ export class CowboyDuelGame extends BaseGame {
                     this.gamePhase = 'miss';
                     this.phaseTimer = 0;
                     console.log('💀 Trop lent !');
+                    // Note: Le son defeat sera joué sur l'écran Game Over global
                 }
                 break;
                 
@@ -574,6 +616,12 @@ export class CowboyDuelGame extends BaseGame {
     shoot() {
         console.log(`🔫 TIR à (${Math.round(this.crosshair.x)}, ${Math.round(this.crosshair.y)})`);
         
+        // Jouer le son de tir
+        if (this.soundGunshot) {
+            this.soundGunshot.setVolume(0.8);
+            this.soundGunshot.play();
+        }
+        
         // Vérifier si on touche la cible
         const hitX = this.crosshair.x >= this.target.x - this.hitboxPadding && 
                      this.crosshair.x <= this.target.x + this.target.width + this.hitboxPadding;
@@ -588,11 +636,18 @@ export class CowboyDuelGame extends BaseGame {
             this.cowboysKilled++;
             this.addScore(100);
             this.target.visible = false;
+            
+            // Jouer le son de succès
+            if (this.soundSuccess) {
+                this.soundSuccess.setVolume(0.7);
+                this.soundSuccess.play();
+            }
         } else {
             // Raté !
             console.log('❌ RATÉ !');
             this.gamePhase = 'miss';
             this.phaseTimer = 0;
+            // Note: Le son defeat sera joué sur l'écran Game Over global
         }
     }
 
@@ -603,6 +658,18 @@ export class CowboyDuelGame extends BaseGame {
         console.log('🧹 CowboyDuelGame - Nettoyage');
         
         try {
+            // Arrêter tous les sons
+            if (this.soundMusic && this.soundMusic.isPlaying()) {
+                this.soundMusic.stop();
+                console.log('🔇 Musique arrêtée');
+            }
+            if (this.soundHeartbeat && this.soundHeartbeat.isPlaying()) {
+                this.soundHeartbeat.stop();
+            }
+            if (this.soundGunshot && this.soundGunshot.isPlaying()) {
+                this.soundGunshot.stop();
+            }
+            
             // Arrêter la détection ML5
             if (this.handPose) {
                 this.handPose.detectStop();

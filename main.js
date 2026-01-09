@@ -18,6 +18,15 @@ class GameManager {
             isSeriesMode: false // Mode série ou partie rapide
         };
 
+        // Sons globaux (utilise l'API Audio HTML5)
+        this.sounds = {
+            defeat: new Audio('./sound/defeat.mp3'),
+            success: new Audio('./sound/success.mp3')
+        };
+        // Précharger les sons
+        this.sounds.defeat.preload = 'auto';
+        this.sounds.success.preload = 'auto';
+
         // Références aux éléments DOM
         this.screens = {
             loading: document.getElementById('loading-screen'),
@@ -37,7 +46,8 @@ class GameManager {
             restart: document.getElementById('btn-restart'),
             menu: document.getElementById('btn-menu'),
             saveScore: document.getElementById('btn-save-score'),
-            backMenu: document.getElementById('btn-back-menu')
+            backMenu: document.getElementById('btn-back-menu'),
+            hudMenu: document.getElementById('btn-hud-menu')
         };
 
         // HUD elements
@@ -203,6 +213,10 @@ class GameManager {
 
         // Bouton retour menu
         this.buttons.menu.addEventListener('click', () => {
+            this.backToMenu();
+        });
+        // Bouton retour menu depuis le HUD en jeu
+        this.buttons.hudMenu.addEventListener('click', () => {
             this.backToMenu();
         });
         
@@ -487,6 +501,13 @@ class GameManager {
     showGameOver() {
         document.getElementById('final-score').textContent = this.state.score;
         this.showScreen('gameover');
+        
+        // Jouer le son de défaite
+        if (this.sounds.defeat) {
+            this.sounds.defeat.volume = 0.7;
+            this.sounds.defeat.currentTime = 0; // Remettre au début si déjà joué
+            this.sounds.defeat.play().catch(e => console.log('Audio play error:', e));
+        }
         
         // Animer les éléments du game over
         gsap.from('#gameover-screen h2', {
