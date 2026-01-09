@@ -99,16 +99,21 @@ const POSE_TYPES = [
             
             const centerY = (leftShoulder.y + rightShoulder.y) / 2;
             
+            // Priorité aux bras (70% du score) - les jambes sont un bonus (30%)
             let score = 0;
             if (leftWrist && leftWrist.confidence > 0.2) {
-                if (leftWrist.y < centerY) score += 25;
+                if (leftWrist.y < centerY) score += 35;
             }
             if (rightWrist && rightWrist.confidence > 0.2) {
-                if (rightWrist.y < centerY) score += 25;
+                if (rightWrist.y < centerY) score += 35;
             }
-            if (leftAnkle && rightAnkle && leftAnkle.confidence > 0.2 && rightAnkle.confidence > 0.2) {
+            // Jambes: bonus optionnel avec seuil de confiance très bas (0.1)
+            if (leftAnkle && rightAnkle && leftAnkle.confidence > 0.1 && rightAnkle.confidence > 0.1) {
                 const ankleDist = p.dist(leftAnkle.x, leftAnkle.y, rightAnkle.x, rightAnkle.y);
-                if (ankleDist > shoulderDist * 1.2) score += 50;
+                if (ankleDist > shoulderDist * 1.0) score += 30; // Seuil réduit de 1.2 à 1.0
+            } else {
+                // Si jambes non détectées, donner des points bonus si les bras sont bien positionnés
+                score += 10;
             }
             return score;
         }
@@ -216,6 +221,10 @@ const POSE_TYPES = [
         checkPose: function(keypoints, p) {
             const leftShoulder = keypoints[5];
             const rightShoulder = keypoints[6];
+            const leftHip = keypoints[11];
+            const rightHip = keypoints[12];
+            const leftKnee = keypoints[13];
+            const rightKnee = keypoints[14];
             const leftAnkle = keypoints[15];
             const rightAnkle = keypoints[16];
             
@@ -225,12 +234,31 @@ const POSE_TYPES = [
             if (shoulderDist < 20) return 0;
             
             let score = 0;
-            if (leftAnkle && rightAnkle && leftAnkle.confidence > 0.2 && rightAnkle.confidence > 0.2) {
-                const ankleDist = p.dist(leftAnkle.x, leftAnkle.y, rightAnkle.x, rightAnkle.y);
-                if (ankleDist > shoulderDist * 1.8) score += 100;
-                else if (ankleDist > shoulderDist * 1.3) score += 70;
+            
+            // Méthode 1: Utiliser les hanches (plus fiable, 40 points)
+            if (leftHip && rightHip && leftHip.confidence > 0.15 && rightHip.confidence > 0.15) {
+                const hipDist = p.dist(leftHip.x, leftHip.y, rightHip.x, rightHip.y);
+                if (hipDist > shoulderDist * 0.8) score += 40;
             }
-            return score;
+            
+            // Méthode 2: Utiliser les genoux (assez fiable, 30 points)
+            if (leftKnee && rightKnee && leftKnee.confidence > 0.1 && rightKnee.confidence > 0.1) {
+                const kneeDist = p.dist(leftKnee.x, leftKnee.y, rightKnee.x, rightKnee.y);
+                if (kneeDist > shoulderDist * 1.2) score += 30;
+            }
+            
+            // Méthode 3: Utiliser les chevilles (bonus si détectées, 30 points)
+            if (leftAnkle && rightAnkle && leftAnkle.confidence > 0.1 && rightAnkle.confidence > 0.1) {
+                const ankleDist = p.dist(leftAnkle.x, leftAnkle.y, rightAnkle.x, rightAnkle.y);
+                if (ankleDist > shoulderDist * 1.3) score += 30;
+            }
+            
+            // Si aucune jambe détectée mais hanches écartées, donner un score minimum
+            if (score === 0 && leftHip && rightHip) {
+                score = 50; // Score par défaut si posture debout
+            }
+            
+            return p.min(100, score);
         }
     },
     
@@ -364,6 +392,9 @@ export class WallShapesGame extends BaseGame {
     constructor(gameManager) {
         super(gameManager);
         
+        // Police
+        this.lexendFont = null;
+        
         // ML5 BodyPose
         this.bodyPose = null;
         this.poses = [];
@@ -372,6 +403,11 @@ export class WallShapesGame extends BaseGame {
         this.poseReady = false;
         this.previewGraphics = null;
         
+        // Lissage des keypoints pour fluidité
+        this.smoothedKeypoints = [];
+        this.smoothingFactor = 0.25; // 0.1 = très lisse, 0.5 = réactif. 0.25 = bon équilibre
+        this.minConfidence = 0.3; // Seuil de confiance minimum
+        
         // Game state
         this.gamePhase = 'loading'; // loading, ready, playing, gameover
         this.level = 1;
@@ -379,9 +415,9 @@ export class WallShapesGame extends BaseGame {
         this.lastLevelScore = 0;
         
         // Game world
-        this.wallSpeed = 2.5;
+        this.wallSpeed = 1.5;
         this.wallSpawnTimer = 0;
-        this.wallSpawnInterval = 120;
+        this.wallSpawnInterval = 180;
         this.lastPoseName = '';
         this.totalWallsSpawned = 0;
         
@@ -395,6 +431,50 @@ export class WallShapesGame extends BaseGame {
         
         // HUD Element
         this.hudElement = null;
+    }
+
+    /**
+     * Lissage temporel des keypoints avec lerp pour fluidité
+     * Applique un filtre de lissage exponential moving average
+     */
+    smoothKeypoints(rawKeypoints, p) {
+        if (!rawKeypoints || rawKeypoints.length === 0) return rawKeypoints;
+        
+        // Première frame : initialiser avec les valeurs brutes
+        if (this.smoothedKeypoints.length !== rawKeypoints.length) {
+            this.smoothedKeypoints = rawKeypoints.map(kp => ({
+                x: kp.x,
+                y: kp.y,
+                confidence: kp.confidence,
+                name: kp.name
+            }));
+            return this.smoothedKeypoints;
+        }
+        
+        // Appliquer le lissage lerp sur chaque keypoint
+        for (let i = 0; i < rawKeypoints.length; i++) {
+            const raw = rawKeypoints[i];
+            const smoothed = this.smoothedKeypoints[i];
+            
+            // Ne lisser que si confiance suffisante
+            if (raw.confidence >= this.minConfidence) {
+                // Facteur de lissage adaptatif basé sur la confiance
+                // Plus la confiance est haute, plus on fait confiance à la nouvelle valeur
+                const adaptiveFactor = this.smoothingFactor * (0.5 + raw.confidence * 0.5);
+                
+                smoothed.x = p.lerp(smoothed.x, raw.x, adaptiveFactor);
+                smoothed.y = p.lerp(smoothed.y, raw.y, adaptiveFactor);
+                smoothed.confidence = raw.confidence;
+            } else if (raw.confidence > 0.1) {
+                // Confiance faible : lissage plus fort pour éviter les sauts
+                smoothed.x = p.lerp(smoothed.x, raw.x, this.smoothingFactor * 0.3);
+                smoothed.y = p.lerp(smoothed.y, raw.y, this.smoothingFactor * 0.3);
+                smoothed.confidence = raw.confidence;
+            }
+            // Si confiance < 0.1, on garde les anciennes valeurs
+        }
+        
+        return this.smoothedKeypoints;
     }
 
     /**
@@ -490,6 +570,14 @@ export class WallShapesGame extends BaseGame {
     }
 
     /**
+     * Charger la police Lexend via l'API FontFace
+     */
+    async loadLexendFont() {
+        // La police sera chargée via loadFont dans preload de p5
+        console.log('📝 Police Lexend sera chargée dans p5.preload');
+    }
+
+    /**
      * Initialisation du jeu
      */
     async init() {
@@ -498,6 +586,9 @@ export class WallShapesGame extends BaseGame {
         return new Promise((resolve, reject) => {
             const sketch = (p) => {
                 p.preload = () => {
+                    // Charger la police Lexend
+                    this.lexendFont = p.loadFont('/fonts/Lexend/Lexend-VariableFont_wght.ttf');
+                    
                     // Charger BodyPose dans preload
                     this.bodyPose = ml5.bodyPose('MoveNet', {
                         modelType: 'SINGLEPOSE_LIGHTNING',
@@ -512,7 +603,7 @@ export class WallShapesGame extends BaseGame {
                     this.canvas.parent('game-container');
                     
                     this.previewGraphics = p.createGraphics(200, 150);
-                    p.textFont('Outfit, system-ui, sans-serif');
+                    p.textFont(this.lexendFont);
                     this.connections = this.bodyPose.getSkeleton();
                     
                     // Initialisation de la webcam
@@ -582,8 +673,8 @@ export class WallShapesGame extends BaseGame {
         this.level = 1;
         this.lives = 3;
         this.lastLevelScore = 0;
-        this.wallSpeed = 2.5;
-        this.wallSpawnInterval = 120;
+        this.wallSpeed = 1.5;
+        this.wallSpawnInterval = 180;
         this.activeWalls = [];
         this.wallSpawnTimer = 0; // Commencer à 0 - attendre la pose
         this.lastPoseName = '';
@@ -631,7 +722,7 @@ export class WallShapesGame extends BaseGame {
             p.push();
             p.fill(255);
             p.textAlign(p.CENTER, p.CENTER);
-            p.textFont('Outfit, system-ui, sans-serif');
+            p.textFont(this.lexendFont);
             p.textSize(24);
             p.textStyle(p.BOLD);
             p.text('En attente de détection de pose...', p.width/2, p.height/2 - 50);
@@ -779,10 +870,13 @@ export class WallShapesGame extends BaseGame {
     }
 
     /**
-     * Dessiner le stickman du joueur
+     * Dessiner le stickman du joueur avec lissage temporel
      */
     drawStickman(p, pose) {
         if (!pose || !this.connections) return;
+        
+        // Appliquer le lissage temporel sur les keypoints
+        const smoothedKeypoints = this.smoothKeypoints(pose.keypoints, p);
         
         p.push();
         
@@ -805,28 +899,32 @@ export class WallShapesGame extends BaseGame {
         const offsetX = (p.width - scaledWidth) / 2;
         const offsetY = (p.height - scaledHeight) / 2;
         
+        // Utiliser les keypoints lissés avec seuil de confiance amélioré
         const getPos = (keypoint) => {
-            if (!keypoint || keypoint.confidence < 0.1) return null;
+            // Seuil de confiance augmenté à 0.2 (était 0.1) pour filtrer les détections erratiques
+            if (!keypoint || keypoint.confidence < 0.2) return null;
             // Miroir horizontal (la vidéo est inversée)
             return {
                 x: (videoWidth - keypoint.x) * scale + offsetX,
-                y: keypoint.y * scale + offsetY
+                y: keypoint.y * scale + offsetY,
+                confidence: keypoint.confidence
             };
         };
         
-        const nose = getPos(pose.keypoints[0]);
-        const leftShoulder = getPos(pose.keypoints[5]);
-        const rightShoulder = getPos(pose.keypoints[6]);
-        const leftElbow = getPos(pose.keypoints[7]);
-        const rightElbow = getPos(pose.keypoints[8]);
-        const leftWrist = getPos(pose.keypoints[9]);
-        const rightWrist = getPos(pose.keypoints[10]);
-        const leftHip = getPos(pose.keypoints[11]);
-        const rightHip = getPos(pose.keypoints[12]);
-        const leftKnee = getPos(pose.keypoints[13]);
-        const rightKnee = getPos(pose.keypoints[14]);
-        const leftAnkle = getPos(pose.keypoints[15]);
-        const rightAnkle = getPos(pose.keypoints[16]);
+        // Utiliser les keypoints LISSÉS au lieu des bruts
+        const nose = getPos(smoothedKeypoints[0]);
+        const leftShoulder = getPos(smoothedKeypoints[5]);
+        const rightShoulder = getPos(smoothedKeypoints[6]);
+        const leftElbow = getPos(smoothedKeypoints[7]);
+        const rightElbow = getPos(smoothedKeypoints[8]);
+        const leftWrist = getPos(smoothedKeypoints[9]);
+        const rightWrist = getPos(smoothedKeypoints[10]);
+        const leftHip = getPos(smoothedKeypoints[11]);
+        const rightHip = getPos(smoothedKeypoints[12]);
+        const leftKnee = getPos(smoothedKeypoints[13]);
+        const rightKnee = getPos(smoothedKeypoints[14]);
+        const leftAnkle = getPos(smoothedKeypoints[15]);
+        const rightAnkle = getPos(smoothedKeypoints[16]);
         
         p.strokeCap(p.ROUND);
         p.strokeJoin(p.ROUND);
@@ -1009,7 +1107,7 @@ export class WallShapesGame extends BaseGame {
         
         p.fill(100, 200, 255, 200);
         p.noStroke();
-        p.textFont('Outfit, system-ui, sans-serif');
+        p.textFont(this.lexendFont);
         p.textSize(11);
         p.textAlign(p.LEFT);
         p.textStyle(p.BOLD);
@@ -1035,9 +1133,9 @@ export class WallShapesGame extends BaseGame {
             p.rect(240, p.height - 50, p.width - 280, 4, 2);
             
             const matchScore = nearestWall.matchScore || 0;
-            if (matchScore >= 75) {
+            if (matchScore >= 65) { // Seuil vert réduit à 65%
                 p.fill(...COLORS.success);
-            } else if (matchScore >= 50) {
+            } else if (matchScore >= 40) { // Seuil orange réduit à 40%
                 p.fill(255, 200, 100);
             } else {
                 p.fill(100, 100, 120);
@@ -1046,7 +1144,7 @@ export class WallShapesGame extends BaseGame {
             
             p.fill(255, 255, 255, 120);
             p.textAlign(p.RIGHT);
-            p.textFont('Outfit, system-ui, sans-serif');
+            p.textFont(this.lexendFont);
             p.textSize(11);
             p.text(nearestWall.poseType.name + ' ' + p.floor(matchScore) + '%', p.width - 30, p.height - 44);
             p.pop();
@@ -1094,7 +1192,7 @@ export class WallShapesGame extends BaseGame {
         if (this.feedbackTimer > 0) {
             p.push();
             p.textAlign(p.CENTER, p.CENTER);
-            p.textFont('Outfit, system-ui, sans-serif');
+            p.textFont(this.lexendFont);
             
             let alpha = p.map(this.feedbackTimer, 50, 0, 255, 0);
             let size = p.map(this.feedbackTimer, 50, 0, 32, 42);
@@ -1121,8 +1219,8 @@ export class WallShapesGame extends BaseGame {
     levelUp(p) {
         this.level++;
         this.lastLevelScore = this.score;
-        this.wallSpeed = p.min(4.0, 2.5 + (this.level - 1) * 0.15);
-        this.wallSpawnInterval = p.max(80, 120 - (this.level - 1) * 5);
+        this.wallSpeed = p.min(4.0, 1.5 + (this.level - 1) * 0.2);
+        this.wallSpawnInterval = p.max(80, 180 - (this.level - 1) * 8);
         this.showFeedback(p, 'LEVEL ' + this.level, p.color(...COLORS.warning));
     }
 
@@ -1212,7 +1310,7 @@ class PoseWall {
         }
         
         this.matchScore = this.poseType.checkPose(pose.keypoints, p);
-        return this.matchScore >= 75;
+        return this.matchScore >= 65; // Seuil réduit de 75% à 65% pour être plus indulgent
     }
     
     draw(p, playerPose) {
@@ -1254,7 +1352,7 @@ class PoseWall {
         p.noStroke();
         p.fill(255);
         p.textAlign(p.CENTER, p.CENTER);
-        p.textFont('Outfit, system-ui, sans-serif');
+        p.textFont(this.lexendFont);
         p.textSize(22 * scale);
         p.textStyle(p.BOLD);
         p.text(this.poseType.name, 0, -h/2 - 30 * scale);
