@@ -37,7 +37,8 @@ class GameManager {
             restart: document.getElementById('btn-restart'),
             menu: document.getElementById('btn-menu'),
             saveScore: document.getElementById('btn-save-score'),
-            backMenu: document.getElementById('btn-back-menu')
+            backMenu: document.getElementById('btn-back-menu'),
+            hudMenu: document.getElementById('btn-hud-menu')
         };
 
         // HUD elements
@@ -203,6 +204,10 @@ class GameManager {
 
         // Bouton retour menu
         this.buttons.menu.addEventListener('click', () => {
+            this.backToMenu();
+        });
+        // Bouton retour menu depuis le HUD en jeu
+        this.buttons.hudMenu.addEventListener('click', () => {
             this.backToMenu();
         });
         

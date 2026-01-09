@@ -69,7 +69,7 @@
         <div id="game-container" class="hidden relative flex-1 w-full h-full">
             <!-- Le canvas P5.js sera inséré ici -->
             
-            <!-- HUD bas de l'écran (Score et Numéro de jeu) -->
+            <!-- HUD bas de l'écran (Score, Numéro de jeu, Retour menu) -->
             <div id="game-hud-bottom" class="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-8 px-8 z-10">
                 <div class="bg-white/90 rounded-2xl px-8 py-4 border-3  shadow-lg">
                     <span class="block text-sm text-text opacity-70 text-center mb-1">Score</span>
@@ -79,6 +79,9 @@
                     <span class="block text-sm text-text opacity-70 text-center mb-1">Mini-Jeu</span>
                     <p id="level-display" class="text-4xl font-outfit font-bold text-secondary text-center">1</p>
                 </div>
+                <button id="btn-hud-menu" class="ml-4 px-6 py-4 bg-secondary text-text text-xl font-outfit font-bold rounded-full hover:scale-110 transition-transform border-2 border-primary shadow-lg">
+                    ⬅️ Menu
+                </button>
             </div>
         </div>
 
