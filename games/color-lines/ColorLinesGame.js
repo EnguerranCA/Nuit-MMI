@@ -193,7 +193,7 @@ export class ColorLinesGame extends BaseGame {
         
         // Reset game state
         this.score = 0;
-        this.lives = 3;
+        this.lives = 10;
         this.combo = 0;
         this.maxCombo = 0;
         this.incomingLines = [];
@@ -201,7 +201,7 @@ export class ColorLinesGame extends BaseGame {
         this.difficultyTimer = 0;
         this.difficultyLevel = 1;
         this.lineSpeed = 5;
-        this.lineSpawnInterval = 150;
+        this.lineSpawnInterval = 230;
         this.activeLaneIndex = null;
         this.gamePhase = 'playing';
         
