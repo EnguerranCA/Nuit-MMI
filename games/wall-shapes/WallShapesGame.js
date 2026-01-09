@@ -395,6 +395,12 @@ export class WallShapesGame extends BaseGame {
         // Police
         this.lexendFont = null;
         
+        // Sons
+        this.soundMusic = null;
+        this.soundSuccess = null;
+        this.soundDefeat = null;
+        this.musicVolume = 0.5;
+        
         // ML5 BodyPose
         this.bodyPose = null;
         this.poses = [];
@@ -575,6 +581,11 @@ export class WallShapesGame extends BaseGame {
                         enableSmoothing: true,
                         flipped: false
                     });
+                    
+                    // Charger les sons
+                    this.soundMusic = p.loadSound('./sound/ost synthwave.mp3');
+                    this.soundSuccess = p.loadSound('./sound/success.mp3');
+                    this.soundDefeat = p.loadSound('./sound/defeat.mp3');
                 };
                 p.setup = () => {
                     // Création du canvas plein écran
@@ -656,6 +667,13 @@ export class WallShapesGame extends BaseGame {
         // Créer le HUD
         this.createHUD();
         
+        // Démarrer la musique
+        if (this.soundMusic && !this.soundMusic.isPlaying()) {
+            this.soundMusic.setVolume(this.musicVolume);
+            this.soundMusic.loop();
+            console.log('🎵 Musique synthwave démarrée');
+        }
+        
         console.log('🧱 État initial:', {
             isRunning: this.isRunning,
             gamePhase: this.gamePhase,
@@ -735,6 +753,12 @@ export class WallShapesGame extends BaseGame {
                         const points = Math.floor(wall.matchScore);
                         this.addScore(points);
                         
+                        // Jouer son de succès
+                        if (this.soundSuccess) {
+                            this.soundSuccess.setVolume(0.5);
+                            this.soundSuccess.play();
+                        }
+                        
                         if (wall.matchScore >= 95) {
                             this.showFeedback(p, 'PERFECT! +' + points, p.color(...COLORS.success));
                         } else {
@@ -742,6 +766,13 @@ export class WallShapesGame extends BaseGame {
                         }
                     } else {
                         this.lives--;
+                        
+                        // Jouer son de défaite
+                        if (this.soundDefeat) {
+                            this.soundDefeat.setVolume(0.6);
+                            this.soundDefeat.play();
+                        }
+                        
                         this.showFeedback(p, 'MISS', p.color(...COLORS.danger));
                         if (this.lives <= 0) {
                             this.gameOver();
@@ -1201,6 +1232,18 @@ export class WallShapesGame extends BaseGame {
      */
     cleanup() {
         console.log('🧹 WallShapesGame - Nettoyage');
+        
+        // Arrêter tous les sons
+        if (this.soundMusic && this.soundMusic.isPlaying()) {
+            this.soundMusic.stop();
+            console.log('🔇 Musique arrêtée');
+        }
+        if (this.soundSuccess && this.soundSuccess.isPlaying()) {
+            this.soundSuccess.stop();
+        }
+        if (this.soundDefeat && this.soundDefeat.isPlaying()) {
+            this.soundDefeat.stop();
+        }
         
         // Supprimer le HUD
         this.removeHUD();

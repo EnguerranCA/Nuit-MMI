@@ -437,8 +437,30 @@ export class ColorLinesGame extends BaseGame {
      * Spawn a new incoming line
      */
     spawnLine(p) {
-        // Choose a random lane
-        const laneIndex = Math.floor(p.random(4));
+        // Minimum spacing between lines on the same lane
+        const minSpacing = this.maxLineWidth + 100;
+        
+        // Find available lanes (no recent line too close)
+        const availableLanes = [];
+        for (let i = 0; i < 4; i++) {
+            const lastLineOnLane = this.incomingLines
+                .filter(line => line.laneIndex === i)
+                .sort((a, b) => b.x - a.x)[0]; // Get the rightmost (newest) line
+            
+            // Lane is available if no line exists or the last line is far enough
+            if (!lastLineOnLane || lastLineOnLane.x < p.width - minSpacing) {
+                availableLanes.push(i);
+            }
+        }
+        
+        // If no lanes available, skip this spawn
+        if (availableLanes.length === 0) {
+            console.log('⏭️ Skipping spawn - all lanes occupied');
+            return;
+        }
+        
+        // Choose a random lane from available ones
+        const laneIndex = availableLanes[Math.floor(p.random(availableLanes.length))];
         const lane = this.lanes[laneIndex];
         
         // Random width for variety
