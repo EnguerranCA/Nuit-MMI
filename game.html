@@ -8,14 +8,14 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Rubik+Mono+One&family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis:YEAR@1979&family=Fredoka:wght@400;600&family=Rubik+Mono+One&family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="./styles.css">
     
     <!-- P5.js et P5play via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.4/lib/p5.js"></script>
     <script src="https://p5play.org/v3/planck.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/p5@1.11.4/lib/addons/p5.sound.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/p5@1.11.4/lib/addons/p5.sound.min.js"></script>
     <script src="https://p5play.org/v3/p5play.js"></script>
     
     <!-- ML5.js via CDN -->
@@ -23,6 +23,12 @@
     
     <style>
         /* Configuration des polices menu */
+        .font-climate {
+            font-family: 'Climate Crisis', sans-serif;
+        }
+        .font-lexend {
+            font-family: 'Lexend', sans-serif;
+        }
         
         /* Effet de grain pour le fond */
         .bg-grain {
@@ -63,7 +69,7 @@
             </main>
 
             <!-- Bouton Leaderboard flottant -->
-            <button id="btn-leaderboard" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-[#FFB347] p-4 rounded-full shadow-lg border-b-4 border-[#E59A30] hover:scale-110 transition-transform z-20">
+            <button id="btn-leaderboard" class="fixed bottom-10 right-10 md:bottom-25 md:right-30 bg-[#FFB347] p-4 rounded-full shadow-lg border-b-4 border-[#E59A30] hover:scale-110 transition-transform z-20">
                 <svg width="69" height="69" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M34.5 31.625C36.0812 31.625 37.4354 31.0625 38.5624 29.9374C39.6894 28.8123 40.2519 27.4582 40.25 25.875C40.2481 24.2918 39.6855 22.9387 38.5624 21.8155C37.4392 20.6923 36.0851 20.1288 34.5 20.125C32.9149 20.1212 31.5618 20.6847 30.4405 21.8155C29.3193 22.9463 28.7558 24.2995 28.75 25.875C28.7442 27.4505 29.3078 28.8046 30.4405 29.9374C31.5733 31.0701 32.9264 31.6327 34.5 31.625ZM20.125 60.375V54.625H31.625V45.7125C29.2771 45.1854 27.1812 44.1916 25.3374 42.7311C23.4935 41.2706 22.1394 39.4373 21.275 37.2312C17.6813 36.8 14.675 35.2312 12.2561 32.5249C9.83729 29.8185 8.62692 26.6436 8.625 23V20.125C8.625 18.5437 9.1885 17.1906 10.3155 16.0655C11.4425 14.9404 12.7957 14.3769 14.375 14.375H20.125V8.625H48.875V14.375H54.625C56.2062 14.375 57.5604 14.9385 58.6874 16.0655C59.8144 17.1925 60.3769 18.5457 60.375 20.125V23C60.375 26.6417 59.1646 29.8166 56.7439 32.5249C54.3231 35.2331 51.3168 36.8019 47.725 37.2312C46.8625 39.4354 45.5093 41.2687 43.6655 42.7311C41.8217 44.1935 39.7248 45.1873 37.375 45.7125V54.625H48.875V60.375H20.125ZM20.125 31.05V20.125H14.375V23C14.375 24.8208 14.9021 26.4625 15.9563 27.9249C17.0104 29.3873 18.4 30.429 20.125 31.05ZM34.5 40.25C36.8958 40.25 38.9323 39.4115 40.6094 37.7344C42.2865 36.0573 43.125 34.0208 43.125 31.625V14.375H25.875V31.625C25.875 34.0208 26.7135 36.0573 28.3906 37.7344C30.0677 39.4115 32.1042 40.25 34.5 40.25ZM48.875 31.05C50.6 30.4271 51.9896 29.3844 53.0438 27.922C54.0979 26.4596 54.625 24.8189 54.625 23V20.125H48.875V31.05Z" fill="black"/>
                 </svg>
@@ -92,24 +98,19 @@
             <!-- Le canvas P5.js sera inséré ici -->
             
             <!-- HUD bas de l'écran (Score, Numéro de jeu, Retour menu) -->
-            <div id="game-hud-bottom" class="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-32 px-8 z-10">
-                <div class="bg-primary rounded-4xl px-12 py-4 shadow-lg min-w-40">
-                    <span class="block text-sm text-text text-center mb-1">Score</span>
-                    <p id="score-display" class="text-4xl font-climate-crisis font-bold text-background-home text-center">0</p>
+            <div id="game-hud-bottom" class="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-8 px-8 z-10">
+                <div class="bg-white/90 rounded-2xl px-8 py-4 border-3  shadow-lg">
+                    <span class="block text-sm text-text opacity-70 text-center mb-1">Score</span>
+                    <p id="score-display" class="text-4xl font-climate-crisis font-bold text-primary text-center">0</p>
                 </div>
-                <div class="bg-primary rounded-4xl px-12 py-4 shadow-lg min-w-40">
-                    <span class="block text-sm text-text text-center mb-1">Mini-Game</span>
-                    <p id="level-display" class="text-4xl font-climate-crisis font-bold text-background-home text-center">1</p>
+                <div class="bg-white/90 rounded-2xl px-8 py-4 border-3  shadow-lg">
+                    <span class="block text-sm text-text opacity-70 text-center mb-1">Mini-Game</span>
+                    <p id="level-display" class="text-4xl font-climate-crisis font-bold text-secondary text-center">1</p>
                 </div>
+                <button id="btn-hud-menu" class="ml-4 px-6 py-4 bg-secondary text-text text-xl font-climate-crisis font-bold rounded-full hover:scale-110 transition-transform border-2 border-primary shadow-lg">
+                    ⬅️ Menu
+                </button>
             </div>
-            
-            <!-- Bouton Menu flottant avec fond étoile -->
-            <button id="btn-hud-menu" class="absolute -bottom-12 left-1/2 -translate-x-1/2 z-20 hover:scale-110 transition-transform cursor-pointer">
-                <img src="./assets/purplestarformatnice.png" alt="" class="w-40 h-40 object-contain" />
-                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="42" viewBox="0 0 81 69" fill="none" class="absolute top-1/3 left-1/2 -translate-x-1/2">
-                    <path d="M40.5 10.9182L60.75 29.1829V60.8824H52.65V36.5294H28.35V60.8824H20.25V29.1829L40.5 10.9182ZM40.5 0L0 36.5294H12.15V69H36.45V44.6471H44.55V69H68.85V36.5294H81L40.5 0Z" fill="#F2EEE5"/>
-                </svg>
-            </button>
         </div>
 
         <!-- Écran de transition -->
@@ -158,21 +159,36 @@
         </div>
 
         <!-- Écran de classement -->
-        <div id="leaderboard-screen" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-background z-40 p-8">
-            <div class="max-w-3xl w-full bg-white rounded-3xl shadow-2xl p-8 border-4 border-primary">
-                <h2 class="text-5xl font-climate-crisis font-bold text-primary mb-8 text-center">
-                    Leaderboard
-                </h2>
-                
-                <!-- Leaderboard list -->
-                <div id="leaderboard-list" class="space-y-3 mb-8 max-h-96 overflow-y-auto overflow-x-hidden">
-                    <!-- Dynamic loading -->
+        <div id="leaderboard-screen" class="hidden absolute inset-0 bg-beige z-40">
+            <!-- Purple Star Decoration -->
+            <img src="./assets/PurpleStarBackgroundNoCrop.png" alt="" class="absolute -bottom-30 -right-30 w-[250px] md:w-[400px] pointer-events-none opacity-90">
+            
+            <!-- Main Container -->
+            <div class="relative z-10 flex items-center justify-center min-h-screen p-4 md:p-8">
+                <!-- Orange Leaderboard Card -->
+                <div class="bg-orange rounded-[40px] md:rounded-[60px] w-full max-w-[700px] p-6 md:p-10 shadow-2xl">
+                    <!-- Title -->
+                    <h2 class="font-climate text-black text-3xl md:text-5xl text-center mb-6 md:mb-8 uppercase tracking-wide" style="letter-spacing: 0.02em;">
+                        Leaderboard
+                    </h2>
+                    
+                    <!-- Leaderboard Rows -->
+                    <div id="leaderboard-list" class="space-y-4 md:space-y-5 max-h-[50vh] overflow-y-auto overflow-x-hidden pr-2">
+                        <!-- Dynamic rows will be inserted here -->
+                        <!-- Loading placeholder -->
+                        <div class="text-center py-8">
+                            <p class="text-black text-xl animate-pulse">Loading scores...</p>
+                        </div>
+                    </div>
                 </div>
-                
-                <button id="btn-back-menu" class="w-full px-8 py-4 bg-secondary text-text text-2xl font-climate-crisis font-bold rounded-full hover:scale-105 transition-transform">
-                    Back to Menu
-                </button>
             </div>
+            
+            <!-- Home Button -->
+            <button id="btn-back-menu" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-16 h-16 md:w-20 md:h-20 bg-transparent hover:scale-110 transition-transform z-20 flex items-center justify-center">
+                <svg width="100%" height="100%" viewBox="0 0 133 133" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.1667 110.833V49.875L66.5 16.625L110.833 49.875V110.833H77.5833V72.1875H55.4167V110.833H22.1667Z" stroke="#F2EEE5" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
         </div>
     </div>
 

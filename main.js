@@ -383,7 +383,7 @@ class GameManager {
         this.state.isSeriesMode = true; // Mode série
         
         // Séquence des mini-jeux (tous les jeux)
-        this.state.gamesSequence = ['wall-shapes', 'plumber', 'cow-boy'];
+        this.state.gamesSequence = ['wall-shapes', 'plumber', 'cow-boy', 'color-lines'];
         
         // Affichage du tutoriel
         this.showTutorial();
