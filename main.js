@@ -271,6 +271,7 @@ class GameManager {
         this.state.score = 0;
         this.state.level = 1;
         this.state.currentGameIndex = 0;
+        this.state.isSeriesMode = true; // Mode série
         
         // Séquence des mini-jeux (tous les jeux)
         this.state.gamesSequence = ['wall-shapes', 'plumber', 'cow-boy'];
@@ -518,7 +519,14 @@ class GameManager {
      * Redémarrage de la session
      */
     restartGameSession() {
-        this.startGameSession();
+        if (this.state.isSeriesMode) {
+            // En mode série, on relance toute la série
+            this.startGameSession();
+        } else {
+            // En mode jeu libre, on relance le même jeu
+            const currentGameId = this.state.gamesSequence[0];
+            this.startSingleGame(currentGameId);
+        }
     }
 
     /**
