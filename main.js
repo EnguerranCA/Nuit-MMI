@@ -232,17 +232,17 @@ class GameManager {
             card.className = 'group p-3 rounded-[2rem] pb-4 shadow-lg transition-transform hover:-translate-y-1 cursor-pointer';
             card.style.backgroundColor = color;
             
-            // Images pour chaque jeu
+            // Images pour chaque jeu avec styles personnalisés
             const gameImages = {
-                'wall-shapes': './assets/PersonIllustration2.png',
-                'plumber': './assets/PersonIllustration3.png',
-                'cow-boy': './assets/PersonIllustration1.png',
-                'color-lines': './assets/PersonStar.png'
+                'wall-shapes': { src: './assets/PersonIllustration2.png', style: 'width: 220px; height: auto;' },
+                'plumber': { src: './assets/PersonIllustration3.png', style: 'width: 250px; height: auto;' },
+                'cow-boy': { src: './assets/PersonIllustration1.png', style: 'width: 240px; height: auto;' },
+                'color-lines': { src: './assets/PersonStar.png', style: 'width: 250px; height: auto; margin-top: 20px;' }
             };
-            const imgSrc = gameImages[gameId] || '';
+            const imgData = gameImages[gameId] || null;
             card.innerHTML = `
                 <div class="bg-[#F2F0E9] w-full h-40 rounded-2xl mb-3 relative overflow-hidden border-2 border-black/5 group-hover:border-black/10 transition-colors flex items-center justify-center">
-                    ${imgSrc ? `<img src='${imgSrc}' alt='' class='absolute w-400 h-400 object-contain pointer-events-none' />` : `<span class='text-4xl opacity-50'>🎮</span>`}
+                    ${imgData ? `<img src='${imgData.src}' alt='' style='${imgData.style}' class='object-contain pointer-events-none' />` : `<span class='text-4xl opacity-50 translate-60'>🎮</span>`}
                 </div>
                 <h2 class="text-black/80 font-lexend font-semibold text-lg uppercase tracking-wide ml-2">
                     ${displayName}

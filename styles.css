@@ -1,40 +1,40 @@
 /* Import des fonts Google - doit être en premier */
-@import url('https://fonts.googleapis.com/css2?family=Climate+Crisis:YEAR@1979&family=Lexend:wght@100..900&family=Outfit:wght@100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Climate+Crisis:YEAR@1979&family=Lexend:wght@100..900&family=Outfit:wght@100..900&display=swap");
 
 @import "tailwindcss";
 
 @theme {
   /* Palette Kawaii personnalisée */
-  --color-orange: #FFB755;
-  --color-lime: #A3FF56;
-  --color-beige: #F2EEE5;
-  --color-light-black: #201F1F;
+  --color-orange: #ffb755;
+  --color-lime: #a3ff56;
+  --color-beige: #f2eee5;
+  --color-light-black: #201f1f;
   --color-black: #000000;
-  --color-light-blue: #55FFD2;
-  --color-blue: #54D8FF;
-  --color-purple: #9755FF;
-  --color-mauve: #F855FE;
-  --color-red: #FF3246;
+  --color-light-blue: #55ffd2;
+  --color-blue: #54d8ff;
+  --color-purple: #9755ff;
+  --color-mauve: #f855fe;
+  --color-red: #ff3246;
 
-  
   /* Alias pour faciliter l'utilisation */
   --color-primary: var(--color-orange);
   --color-secondary: var(--color-lime);
   --color-background: var(--color-beige);
+  --color-background-home: var(--color-black);
+
   --color-text: var(--color-black);
-  
+
   /* Fonts */
-  --font-climate-crisis: 'Climate Crisis', sans-serif;
-  --font-lexend: 'Lexend', sans-serif;
-  --font-outfit: 'Outfit', sans-serif;
-  
+  --font-climate-crisis: "Climate Crisis", sans-serif;
+  --font-lexend: "Lexend", sans-serif;
+  --font-outfit: "Outfit", sans-serif;
+
   /* Font families pour Tailwind */
   --font-family-sans: var(--font-lexend);
   --font-family-display: var(--font-climate-crisis);
 }
 
 body {
-  background-color: var(--color-background);
   color: var(--color-text);
   font-family: var(--font-lexend);
 }
@@ -43,18 +43,19 @@ body {
 /* Game pages can override with their own background */
 
 /* Titres avec Climate Crisis */
-h1, h2, h3, h4, h5, h6,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
 .font-display {
   font-family: var(--font-climate-crisis);
 }
 
-
-
 .bounce {
   animation: bounce-soft 2s ease-in-out infinite;
 }
-
-
 
 .pulse {
   animation: pulse-kawaii 1.5s ease-in-out infinite;

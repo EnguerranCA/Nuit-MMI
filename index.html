@@ -12,40 +12,217 @@
         .font-climate {
             font-family: 'Climate Crisis', cursive;
         }
+        .font-climate-light {
+            font-family: 'Climate Crisis', cursive;
+            font-variation-settings: 'YEAR' 1979;
+        }
+        
+        /* Scroll Animation Classes */
+        .animate-on-scroll {
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .animate-on-scroll.visible {
+            opacity: 1;
+        }
+        
+        /* Fade and slide animations */
+        .fade-up {
+            transform: translateY(40px);
+        }
+        .fade-up.visible {
+            transform: translateY(0);
+        }
+        
+        .fade-left {
+            transform: translateX(-60px);
+        }
+        .fade-left.visible {
+            transform: translateX(0);
+        }
+        
+        .fade-right {
+            transform: translateX(60px);
+        }
+        .fade-right.visible {
+            transform: translateX(0);
+        }
+        
+        .scale-in {
+            transform: scale(0.8);
+        }
+        .scale-in.visible {
+            transform: scale(1);
+        }
+        
+        .rotate-in {
+            transform: rotate(-10deg) scale(0.9);
+        }
+        .rotate-in.visible {
+            transform: rotate(0deg) scale(1);
+        }
+        
+        /* Floating animation for decorative elements */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
+        }
+        .float {
+            animation: float 4s ease-in-out infinite;
+        }
+        .float-delayed {
+            animation: float 4s ease-in-out infinite 1s;
+        }
+        .float-slow {
+            animation: float 6s ease-in-out infinite 0.5s;
+        }
+        
+        /* Spinning animation for stars */
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .spin-slow {
+            animation: spin-slow 20s linear infinite;
+        }
+        
+        /* Pulse animation */
+        @keyframes pulse-scale {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .pulse-scale {
+            animation: pulse-scale 3s ease-in-out infinite;
+        }
+        
+        /* Bounce animation for buttons */
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .bounce-hover:hover {
+            animation: bounce-subtle 0.5s ease-in-out;
+        }
+        
+        /* Stagger delay utilities */
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 300ms; }
+        .delay-400 { transition-delay: 400ms; }
+        .delay-500 { transition-delay: 500ms; }
+        
+        /* 3D Carousel Styles */
+        .game-card {
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+        
+        .game-card.center {
+            transform: translateX(0) translateZ(40px) rotateY(0deg) scale(1.05);
+            z-index: 30;
+        }
+        
+        .game-card.left {
+            transform: translateX(-120px) translateZ(-30px) rotateY(20deg) scale(0.8);
+            z-index: 20;
+            opacity: 0.85;
+        }
+        
+        .game-card.right {
+            transform: translateX(120px) translateZ(-30px) rotateY(-20deg) scale(0.8);
+            z-index: 20;
+            opacity: 0.85;
+        }
+        
+        .game-card.back {
+            transform: translateX(0) translateZ(-120px) rotateY(0deg) scale(0.55);
+            z-index: 10;
+            opacity: 0.3;
+        }
+        
+        @media (min-width: 768px) {
+            .game-card.center {
+                transform: translateX(0) translateZ(60px) rotateY(0deg) scale(1.1);
+            }
+            .game-card.left {
+                transform: translateX(-200px) translateZ(-40px) rotateY(25deg) scale(0.85);
+            }
+            .game-card.right {
+                transform: translateX(200px) translateZ(-40px) rotateY(-25deg) scale(0.85);
+            }
+        }
+        
+        /* Card content transitions */
+        .game-card .card-title {
+            transition: transform 0.5s ease;
+        }
+        
+        .game-card.center .card-title {
+            transform: translateY(0);
+        }
+        
+        .game-card:not(.center) .card-title {
+            transform: translateY(100px);
+        }
+        
+        @media (min-width: 768px) {
+            .game-card:not(.center) .card-title {
+                transform: translateY(140px);
+            }
+        }
+        
+        .game-card.center .card-description {
+            opacity: 1 !important;
+            transform: translateY(0);
+        }
+        
+        .game-card:not(.center) .card-description {
+            opacity: 0 !important;
+            transform: translateY(20px);
+        }
+        
+        .carousel-dot.active {
+            background-color: rgba(242, 238, 229, 1);
+            transform: scale(1.3);
+        }
     </style>
 </head>
-<body class="bg-light-black min-h-screen font-lexend">
+<body class="bg-light-black min-h-screen font-lexend overflow-x-hidden">
 
     <!-- Main Container -->
-    <div class="max-w-[1400px] mx-auto px-4 py-8">
+    <div class="max-w-[1400px] mx-auto px-4 py-8 overflow-visible">
         
         <!-- Header Section -->
-        <section class="relative">
-            <!-- IN 2026 Badge -->
-            <p class="font-climate text-light-black text-xl md:text-2xl absolute -top-6 left-4 md:left-6 z-30 px-4 py-2 rounded-tr-2xl rounded-bl-2xl">IN 2026</p>
+        <section class="relative mt-16 mb-8">
+            <!-- IN 2026 Badge - positioned at the top of folder -->
+            <div class="absolute -top-10 z-[60] w-[200px] md:w-[250px]">
+                <img src="./assets/FolderPartTop.svg" alt="" class="w-full pointer-events-none">
+                <p class="font-climate text-light-black text-lg md:text-xl absolute top-4 left-6 md:left-8">IN 2026</p>
+            </div>
+            
+            <!-- Folder Part Bottom -->
+            <div class="absolute -bottom-10 right-0 z-[60] w-[200px] md:w-[250px]">
+                <img src="./assets/FolderPartBottom.svg" alt="" class="w-full pointer-events-none">
+            </div>
             
             <!-- Main Hero Card -->
-            <div class="bg-beige rounded-tr-2xl rounded-bl-2xl relative min-h-[500px] md:min-h-[650px] mt-8">
+            <div class="bg-beige rounded-[30px] relative overflow-hidden min-h-[500px] md:min-h-[650px]">
                 
-                <!-- Folder Parts -->
-                <img src="./assets/FolderPartTop.svg" alt="" class="absolute -top-10 left-0 w-[200px] md:w-[250px] pointer-events-none z-0">
-                <img src="./assets/FolderPartBottom.svg" alt="" class="absolute -bottom-10 right-0 w-[200px] md:w-[250px] pointer-events-none z-0">
-                
-                <!-- Small Stars Row at top left -->
-                <div class="absolute bottom-5 left-5 flex gap-8 z-10">
-                    <img src="./assets/SmallStarVector1.svg" alt="" class="w-10 md:w-12 pointer-events-none">
-                    <img src="./assets/SmallStarVector2.svg" alt="" class="w-10 md:w-12 pointer-events-none">
-                    <img src="./assets/SmallStarVector3.svg" alt="" class="w-10 md:w-12 pointer-events-none">
+                <!-- Small Stars Row at bottom left -->
+                <div class="absolute bottom-5 left-5 flex gap-4 z-10">
+                    <img src="./assets/SmallStarVector1.svg" alt="" class="w-10 md:w-12 pointer-events-none spin-slow">
+                    <img src="./assets/SmallStarVector2.svg" alt="" class="w-10 md:w-12 pointer-events-none spin-slow" style="animation-direction: reverse;">
+                    <img src="./assets/SmallStarVector3.svg" alt="" class="w-10 md:w-12 pointer-events-none spin-slow">
                 </div>
                 
                 <!-- Purple Star Background - moved more to the right -->
-                <img src="./assets/PurpleStarBackground.png" alt="" class="absolute -top-16 left-1/2 md:left-[55%] w-[450px] md:w-[750px] opacity-100 pointer-events-none" style="transform: translateX(-30%);">
+                <img src="./assets/PurpleStarBackground.png" alt="" class="absolute -top-6 left-6/10 md:left-[54%] w-[450px] md:w-[750px] opacity-100 pointer-events-none float-slow" style="transform: translateX(-30%);">
                 
                 <!-- Green Rounded Shape - moved more to the right -->
-                <img src="./assets/RoundedShapeBackground.png" alt="" class="absolute top-[100px] left-[150px] md:left-[250px] w-[180px] md:w-[320px] pointer-events-none z-10">
+                <img src="./assets/RoundedShapeBackground.png" alt="" class="absolute top-[200px] md:top-[100px] left-[10px] md:left-[250px] w-[180px] md:w-[320px] pointer-events-none z-10 float">
                 
                 <!-- Red Spike Ball - moved to the left and slightly lower -->
-                <img src="./assets/RedSpikeBallBackground.png" alt="" class="absolute bottom-[40px] left-1/2 md:left-[45%] w-[140px] md:w-[200px] pointer-events-none z-10">
+                <img src="./assets/RedSpikeBallBackground.png" alt="" class="absolute bottom-[60px] left-4/10 md:left-[30%] w-[140px] md:w-[200px] pointer-events-none z-10 float-delayed">
                 
                 <!-- Hero Content -->
                 <div class="relative z-20 flex flex-col items-center justify-center min-h-[500px] md:min-h-[650px] px-4 text-center">
@@ -70,12 +247,12 @@
         <!-- Objective of the Game Section -->
         <section class="relative py-16 md:py-24">
             <!-- Decorative Shapes -->
-            <img src="./assets/SecondaryShapeBackground1.png" alt="" class="absolute top-0 left-0 w-[200px] md:w-[270px] pointer-events-none opacity-90">
-            <img src="./assets/SecondaryShapeBackground2.png" alt="" class="absolute top-1/3 right-0 w-[200px] md:w-[300px] pointer-events-none opacity-90">
-            <img src="./assets/SecondaryShapeBackground3.png" alt="" class="absolute bottom-0 right-[5%] w-[250px] md:w-[350px] pointer-events-none opacity-90">
+            <img src="./assets/SecondaryShapeBackground1.png" alt="" class="absolute top-0 left-0 w-[200px] md:w-[270px] pointer-events-none opacity-90 z-0 animate-on-scroll fade-left float">
+            <img src="./assets/SecondaryShapeBackground2.png" alt="" class="absolute top-1/3 right-0 w-[200px] md:w-[300px] pointer-events-none opacity-90 -z-10 animate-on-scroll fade-right float-delayed">
+            <img src="./assets/SecondaryShapeBackground3.png" alt="" class="absolute -bottom-25 left-[5%] w-[250px] md:w-[350px] pointer-events-none opacity-90 -z-10 animate-on-scroll fade-up float-slow">
             
             <div class="relative z-10 text-center mb-12">
-                <h2 class="font-climate text-beige text-3xl md:text-4xl lg:text-[40px] mb-8">
+                <h2 class="font-climate text-beige text-3xl md:text-4xl lg:text-[40px] mb-8 animate-on-scroll fade-up" style="letter-spacing: 0.02em;">
                     Objective of the game
                 </h2>
                 <div class="max-w-3xl mx-auto text-beige text-sm md:text-base leading-relaxed space-y-4 px-4">
@@ -86,73 +263,104 @@
                 </div>
             </div>
             
-            <!-- Game Cards -->
-            <div class="flex flex-col md:flex-row items-center justify-center gap-4 mt-12 px-4">
-                <!-- Left Card - Green -->
-                <div class="bg-lime rounded-[40px] p-6 w-full md:w-[250px] h-auto md:h-[340px] flex flex-col">
-                    <h3 class="font-climate text-black text-sm mb-2">Move & React</h3>
-                    <p class="text-black text-xs leading-relaxed">
-                        Use your body as the controller! Wave your hands, move your head, dodge obstacles... Each mini-game uses different body tracking to challenge you in new ways.
-                    </p>
-                </div>
-                
-                <!-- Center Card - Cyan (Featured) -->
-                <div class="bg-light-blue rounded-[40px] p-5 w-full md:w-[320px] h-auto md:h-[430px] flex flex-col relative overflow-hidden">
-                    <div class="mt-4 md:mt-16">
-                        <h3 class="font-climate text-black text-base mb-2">Cowboy Duel</h3>
-                        <p class="text-black text-sm leading-relaxed">
-                            Face off against an AI opponent in a classic western showdown! Wait for the signal, then draw faster than your enemy. Quick reflexes and steady hands will make you the fastest gun in the west.
-                        </p>
+            <!-- 3D Carousel Game Cards -->
+            <div class="relative mt-12 px-2 md:px-4 overflow-hidden" style="perspective: 1000px;">
+                <div id="gameCarousel" class="relative w-full h-[320px] md:h-[420px] flex items-center justify-center">
+                    
+                    <!-- Card 0 - Move & React (lime) -->
+                    <div class="game-card absolute cursor-pointer transition-all duration-700 ease-out" data-index="0" data-color="lime">
+                        <div class="bg-lime rounded-[30px] md:rounded-[40px] p-5 md:p-6 w-[200px] md:w-[260px] h-[260px] md:h-[360px] flex flex-col items-center relative shadow-2xl">
+                            <h3 class="card-title font-climate text-black text-base md:text-xl mb-3">Move & React</h3>
+                            <p class="card-description text-black text-xs md:text-sm leading-relaxed text-center opacity-0 transition-all duration-500">
+                                Use your body as the controller! Wave your hands, move your head, dodge obstacles... Each mini-game uses different body tracking to challenge you in new ways.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 1 - Cowboy Duel (light-blue) -->
+                    <div class="game-card absolute cursor-pointer transition-all duration-700 ease-out" data-index="1" data-color="light-blue">
+                        <div class="bg-light-blue rounded-[30px] md:rounded-[40px] p-5 md:p-6 w-[200px] md:w-[260px] h-[260px] md:h-[360px] flex flex-col items-center relative shadow-2xl">
+                            <h3 class="card-title font-climate text-black text-center md:text-xl mb-3">Cowboy Duel</h3>
+                            <p class="card-description text-black text-xs md:text-sm leading-relaxed text-center opacity-0 transition-all duration-500">
+                                Face off against an AI opponent in a classic western showdown! Wait for the signal, then draw faster than your enemy. Quick reflexes and steady hands will make you the fastest gun in the west.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 2 - Plumber Puzzle (mauve) -->
+                    <div class="game-card absolute cursor-pointer transition-all duration-700 ease-out" data-index="2" data-color="mauve">
+                        <div class="bg-mauve rounded-[30px] md:rounded-[40px] p-5 md:p-6 w-[200px] md:w-[260px] h-[260px] md:h-[360px] flex flex-col items-center relative shadow-2xl">
+                            <h3 class="card-title font-climate text-black text-center md:text-xl mb-3">Plumber Puzzle</h3>
+                            <p class="card-description text-black text-xs md:text-sm leading-relaxed text-center opacity-0 transition-all duration-500">
+                                Connect the pipes before time runs out! Rotate and arrange pipe segments to create a continuous flow. Strategic thinking meets quick reflexes in this puzzle challenge.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 3 - Color Lines (purple) -->
+                    <div class="game-card absolute cursor-pointer transition-all duration-700 ease-out" data-index="3" data-color="purple">
+                        <div class="bg-purple rounded-[30px] md:rounded-[40px] p-5 md:p-6 w-[200px] md:w-[260px] h-[260px] md:h-[360px] flex flex-col items-center relative shadow-2xl">
+                            <h3 class="card-title font-climate text-black text-center md:text-xl mb-3">Color Lines</h3>
+                            <p class="card-description text-black text-xs md:text-sm leading-relaxed text-center opacity-0 transition-all duration-500">
+                                Match the colored lines as they fall! Step on the right colors at the right time to keep the rhythm going. The ultimate test of timing and coordination.
+                            </p>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Right Card - Mauve -->
-                <div class="bg-mauve rounded-[40px] p-6 w-full md:w-[250px] h-auto md:h-[340px] flex flex-col">
-                    <h3 class="font-climate text-black text-sm mb-2">Score Points</h3>
-                    <p class="text-black text-xs leading-relaxed">
-                        Every action counts! The faster and more accurate you are, the higher your score. Complete challenges, beat the clock, and climb the leaderboard to become the ultimate champion.
-                    </p>
+                <!-- Carousel Navigation Dots -->
+                <div class="flex justify-center gap-3 mt-6">
+                    <button class="carousel-dot w-3 h-3 rounded-full bg-beige/40 transition-all duration-300 hover:bg-beige/70" data-target="0"></button>
+                    <button class="carousel-dot w-3 h-3 rounded-full bg-beige/40 transition-all duration-300 hover:bg-beige/70" data-target="1"></button>
+                    <button class="carousel-dot w-3 h-3 rounded-full bg-beige/40 transition-all duration-300 hover:bg-beige/70" data-target="2"></button>
+                    <button class="carousel-dot w-3 h-3 rounded-full bg-beige/40 transition-all duration-300 hover:bg-beige/70" data-target="3"></button>
                 </div>
             </div>
         </section>
 
         <!-- V2 Proposal Section -->
         <section class="py-16">
-            <div class="bg-beige rounded-[40px] relative overflow-hidden py-12 px-6 md:px-16">
+            <div class="bg-beige rounded-[40px] relative overflow-hidden py-12 px-6 md:px-16 animate-on-scroll scale-in">
                 <!-- Decorative character left -->
-                <img src="./assets/PersonIllustration3.png" alt="" class="absolute bottom-0 left-0 w-[120px] md:w-[180px] pointer-events-none opacity-80 hidden md:block">
+                <img src="./assets/PersonIllustration3.png" alt="" class="absolute bottom-0 left-0 w-[120px] md:w-[180px] pointer-events-none opacity-80 hidden md:block float">
                 
                 <div class="relative z-10 max-w-4xl mx-auto text-center">
-                    <h2 class="font-climate text-light-black text-3xl md:text-[40px] mb-8">V2 Proposal</h2>
+                    <h2 class="font-climate text-light-black text-3xl md:text-[40px] mb-8 animate-on-scroll fade-up">V2 Proposal</h2>
+                    
+                    <!-- V2 Gameplay Preview Image -->
+                    <div class="mb-8 animate-on-scroll fade-up delay-100">
+                        <img src="./assets/GameplayColorLineV2.jpg" alt="Color Lines V2 Gameplay with floor gamepad" class="w-1/3 max-w-2xl mx-auto rounded-2xl shadow-xl hover:scale-105 transition-transform duration-300">
+                    </div>
+                    
                     <div class="text-black text-sm md:text-base leading-relaxed space-y-4">
                         <p>
-                            In the next version, we plan to add even more exciting mini-games featuring advanced body tracking with pose detection. Players will be able to jump, squat, and use full-body movements to interact with the games.
+                            <strong>Introducing the Floor Gamepad!</strong> In V2, we're taking Color Lines to the next level with a physical floor mat controller. Step on the right colored shapes with your feet to match the incoming lines – it's like Dance Dance Revolution meets rhythm gaming!
                         </p>
                         <p>
-                            We're also working on multiplayer modes where friends can compete in real-time, a tournament system with brackets, and customizable avatars that react to your movements.
+                            The floor gamepad features four colored zones matching the game's lanes. When a line approaches, quickly move your feet to the corresponding color and step on the shape to score points. The faster and more accurate you are, the higher your combo multiplier!
                         </p>
                         <p>
-                            The leaderboard will be enhanced with weekly challenges, achievement badges, and seasonal rankings. Stay tuned for these exciting updates coming in 2026!
+                            We're also working on multiplayer modes where friends can compete side by side on separate mats, a tournament system with brackets, and weekly challenges with exclusive rewards. Stay tuned for these exciting updates coming in 2026!
                         </p>
                     </div>
                 </div>
                 
                 <!-- Decorative character right -->
-                <img src="./assets/PersonIllustration4.png" alt="" class="absolute top-4 right-0 w-[120px] md:w-[200px] pointer-events-none opacity-80 scale-x-[-1] hidden md:block">
+                <img src="./assets/PersonIllustration4.png" alt="" class="absolute top-4 right-0 w-[120px] md:w-[200px] pointer-events-none opacity-80 scale-x-[-1] hidden md:block float-delayed">
             </div>
         </section>
 
         <!-- Call to Action Section -->
         <section class="py-16 text-center">
-            <h2 class="font-climate text-white text-2xl md:text-4xl max-w-2xl mx-auto leading-tight mb-6">
+            <h2 class="font-climate text-white text-2xl md:text-4xl max-w-2xl mx-auto leading-normal mb-6 animate-on-scroll fade-up" style="letter-spacing: 0.02em;">
                 Chain the mini-games. How far can you go?
             </h2>
-            <p class="text-white text-sm md:text-base max-w-2xl mx-auto leading-relaxed mb-8 px-4">
+            <p class="text-white text-sm md:text-base max-w-2xl mx-auto leading-relaxed mb-8 px-4 animate-on-scroll fade-up delay-200">
                 Start a game and chain a series of fast and dynamic mini-games.<br>
                 Each challenge pushes you to move, react and adapt to score points.<br>
                 Play a quick session or complete the full series to reveal your final score.
             </p>
-            <a href="/game.html" class="inline-block bg-orange text-black font-climate text-base px-10 py-4 rounded-full hover:scale-105 transition-transform shadow-lg">
+            <a href="/game.html" class="inline-block bg-orange text-black font-climate text-base px-10 py-4 rounded-full hover:scale-110 transition-transform shadow-lg animate-on-scroll scale-in delay-300 bounce-hover pulse-scale">
                 Start the game
             </a>
         </section>
@@ -161,7 +369,7 @@
         <section class="py-12">
             <div class="flex items-center gap-4">
                 <!-- Left Arrow -->
-                <button class="border border-beige rounded-full w-9 h-9 flex items-center justify-center text-beige hover:bg-beige hover:text-black transition-colors rotate-180 flex-shrink-0">
+                <button id="previewLeft" class="border border-beige rounded-full w-9 h-9 flex items-center justify-center text-beige hover:bg-beige hover:text-black transition-colors rotate-180 flex-shrink-0">
                     <svg width="7" height="14" viewBox="0 0 7 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M1 1L6 7L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -169,19 +377,19 @@
                 
                 <!-- Game Previews -->
                 <div class="flex-1 flex gap-4 overflow-hidden">
-                    <div class="bg-[#4c4c4c] rounded-lg flex-1 h-[200px] md:h-[280px] flex items-center justify-center">
+                    <div class="game-preview bg-[#4c4c4c] rounded-lg flex-1 h-[200px] md:h-[280px] flex items-center justify-center transition-all duration-300">
                         <span class="text-beige/50 font-climate text-sm">Cowboy Duel</span>
                     </div>
-                    <div class="bg-[#4c4c4c] rounded-lg flex-1 h-[200px] md:h-[280px] hidden md:flex items-center justify-center">
+                    <div class="game-preview bg-[#4c4c4c] rounded-lg flex-1 h-[200px] md:h-[280px] hidden md:flex items-center justify-center transition-all duration-300">
                         <span class="text-beige/50 font-climate text-sm">Plumber Game</span>
                     </div>
-                    <div class="bg-[#4c4c4c] rounded-lg flex-1 h-[200px] md:h-[280px] hidden lg:flex items-center justify-center">
+                    <div class="game-preview bg-[#4c4c4c] rounded-lg flex-1 h-[200px] md:h-[280px] hidden lg:flex items-center justify-center transition-all duration-300">
                         <span class="text-beige/50 font-climate text-sm">Color Lines</span>
                     </div>
                 </div>
                 
                 <!-- Right Arrow -->
-                <button class="border border-beige rounded-full w-9 h-9 flex items-center justify-center text-beige hover:bg-beige hover:text-black transition-colors flex-shrink-0">
+                <button id="previewRight" class="border border-beige rounded-full w-9 h-9 flex items-center justify-center text-beige hover:bg-beige hover:text-black transition-colors flex-shrink-0">
                     <svg width="7" height="14" viewBox="0 0 7 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M1 1L6 7L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -191,46 +399,56 @@
 
         <!-- Meet Our Team Section -->
         <section class="py-16">
-            <div class="bg-beige rounded-[40px] py-10 px-6 md:px-12 overflow-hidden">
-                <h2 class="font-climate text-black text-3xl md:text-5xl text-center mb-12">
+            <div class="bg-beige rounded-[40px] py-10 px-6 md:px-12 overflow-hidden animate-on-scroll fade-up">
+                <h2 class="font-climate text-black text-3xl md:text-5xl text-center mb-12" style="letter-spacing: 0.02em;">
                     Meet our team
                 </h2>
                 
                 <!-- Team Members Grid -->
-                <div class="flex flex-wrap justify-center gap-6 md:gap-8">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-x-4 md:gap-x-2 gap-y-8 justify-items-center items-end">
                     <!-- Enguerran -->
-                    <div class="text-center w-[120px] md:w-[160px]">
-                        <img src="./assets/PersonIllustration1.png" alt="Enguerran" class="w-full h-auto mb-4">
-                        <h3 class="font-climate text-black text-base md:text-xl">Enguerran</h3>
-                        <p class="text-black text-xs md:text-sm">Developer<br>of the structure</p>
+                    <div class="flex flex-col items-center text-center w-full max-w-[180px] animate-on-scroll fade-up delay-100 hover:scale-105 transition-transform duration-300">
+                        <div class="h-[180px] md:h-[220px] flex items-end justify-center mb-4">
+                            <img src="./assets/PersonIllustration1.png" alt="Enguerran" class="max-w-[140px] md:max-w-[160px] max-h-full object-contain">
+                        </div>
+                        <h3 class="font-climate text-black text-sm md:text-base h-[28px] flex items-center" style="letter-spacing: 0.02em;">Enguerran</h3>
+                        <p class="text-black text-xs md:text-sm h-[40px] flex items-start justify-center">Developer<br>of the structure</p>
                     </div>
                     
                     <!-- Owen -->
-                    <div class="text-center w-[120px] md:w-[160px]">
-                        <img src="./assets/PersonIllustration2.png" alt="Owen" class="w-full h-auto mb-4">
-                        <h3 class="font-climate text-black text-base md:text-xl">Owen</h3>
-                        <p class="text-black text-xs md:text-sm">Graphic Designer</p>
+                    <div class="flex flex-col items-center text-center w-full max-w-[180px] animate-on-scroll fade-up delay-200 hover:scale-105 transition-transform duration-300">
+                        <div class="h-[180px] md:h-[220px] flex items-end justify-center mb-4">
+                            <img src="./assets/PersonIllustration2.png" alt="Owen" class="max-w-[140px] md:max-w-[160px] max-h-full object-contain">
+                        </div>
+                        <h3 class="font-climate text-black text-sm md:text-base h-[28px] flex items-center" style="letter-spacing: 0.02em;">Owen</h3>
+                        <p class="text-black text-xs md:text-sm h-[40px] flex items-start justify-center">Graphic Designer</p>
                     </div>
                     
                     <!-- Nina -->
-                    <div class="text-center w-[120px] md:w-[160px]">
-                        <img src="./assets/PersonIllustration3.png" alt="Nina" class="w-full h-auto mb-4">
-                        <h3 class="font-climate text-black text-base md:text-xl">Nina</h3>
-                        <p class="text-black text-xs md:text-sm">Artistic Director</p>
+                    <div class="flex flex-col items-center text-center w-full max-w-[180px] animate-on-scroll fade-up delay-300 hover:scale-105 transition-transform duration-300">
+                        <div class="h-[180px] md:h-[220px] flex items-end justify-center mb-4">
+                            <img src="./assets/PersonIllustration3.png" alt="Nina" class="max-w-[140px] md:max-w-[160px] max-h-full object-contain">
+                        </div>
+                        <h3 class="font-climate text-black text-sm md:text-base h-[28px] flex items-center" style="letter-spacing: 0.02em;">Nina</h3>
+                        <p class="text-black text-xs md:text-sm h-[40px] flex items-start justify-center">Artistic Director</p>
                     </div>
                     
                     <!-- Jean -->
-                    <div class="text-center w-[120px] md:w-[160px]">
-                        <img src="./assets/PersonIllustration4.png" alt="Jean" class="w-full h-auto mb-4">
-                        <h3 class="font-climate text-black text-base md:text-xl">Jean</h3>
-                        <p class="text-black text-xs md:text-sm">Developer</p>
+                    <div class="flex flex-col items-center text-center w-full max-w-[180px] animate-on-scroll fade-up delay-400 hover:scale-105 transition-transform duration-300">
+                        <div class="h-[180px] md:h-[220px] flex items-end justify-center mb-4">
+                            <img src="./assets/PersonIllustration4.png" alt="Jean" class="max-w-[140px] md:max-w-[160px] max-h-full object-contain">
+                        </div>
+                        <h3 class="font-climate text-black text-sm md:text-base h-[28px] flex items-center" style="letter-spacing: 0.02em;">Jean</h3>
+                        <p class="text-black text-xs md:text-sm h-[40px] flex items-start justify-center">Developer</p>
                     </div>
                     
                     <!-- Nathan -->
-                    <div class="text-center w-[120px] md:w-[160px]">
-                        <img src="./assets/PersonIllustration4.png" alt="Nathan" class="w-full h-auto mb-4">
-                        <h3 class="font-climate text-black text-base md:text-xl">Nathan</h3>
-                        <p class="text-black text-xs md:text-sm">Game designer &<br>webdeveloper</p>
+                    <div class="flex flex-col items-center text-center w-full max-w-[180px] col-span-2 md:col-span-1 animate-on-scroll fade-up delay-500 hover:scale-105 transition-transform duration-300">
+                        <div class="h-[180px] md:h-[220px] flex items-end justify-center mb-4">
+                            <img src="./assets/PersonIllustration4.png" alt="Nathan" class="max-w-[140px] md:max-w-[160px] max-h-full object-contain">
+                        </div>
+                        <h3 class="font-climate text-black text-sm md:text-base h-[28px] flex items-center" style="letter-spacing: 0.02em;">Nathan</h3>
+                        <p class="text-black text-xs md:text-sm h-[40px] flex items-start justify-center">Game designer &<br>webdeveloper</p>
                     </div>
                 </div>
             </div>
@@ -264,5 +482,143 @@
             </div>
         </footer>
     </div>
+    
+    <script>
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all elements with animate-on-scroll class
+        document.addEventListener('DOMContentLoaded', () => {
+            const animatedElements = document.querySelectorAll('.animate-on-scroll');
+            animatedElements.forEach(el => observer.observe(el));
+            
+            // Initialize 3D Game Carousel
+            initGameCarousel();
+            
+            // Initialize Games Preview Carousel
+            initPreviewCarousel();
+        });
+        
+        // 3D Game Carousel
+        function initGameCarousel() {
+            const cards = document.querySelectorAll('.game-card');
+            const dots = document.querySelectorAll('.carousel-dot');
+            let currentIndex = 0;
+            const totalCards = cards.length;
+            
+            // Position mapping for 4 cards: center, right, back, left
+            function getPosition(cardIndex, currentCenter) {
+                const diff = (cardIndex - currentCenter + totalCards) % totalCards;
+                if (diff === 0) return 'center';
+                if (diff === 1) return 'right';
+                if (diff === 2) return 'back';
+                if (diff === 3) return 'left';
+            }
+            
+            function updateCarousel() {
+                cards.forEach((card, index) => {
+                    card.classList.remove('center', 'left', 'right', 'back');
+                    const position = getPosition(index, currentIndex);
+                    card.classList.add(position);
+                });
+                
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentIndex);
+                });
+            }
+            
+            // Click handlers for cards
+            cards.forEach((card) => {
+                card.addEventListener('click', () => {
+                    const cardIndex = parseInt(card.dataset.index);
+                    const position = getPosition(cardIndex, currentIndex);
+                    
+                    if (position === 'left') {
+                        currentIndex = (currentIndex - 1 + totalCards) % totalCards;
+                    } else if (position === 'right') {
+                        currentIndex = (currentIndex + 1) % totalCards;
+                    }
+                    
+                    updateCarousel();
+                });
+            });
+            
+            // Dot navigation
+            dots.forEach((dot) => {
+                dot.addEventListener('click', () => {
+                    currentIndex = parseInt(dot.dataset.target);
+                    updateCarousel();
+                });
+            });
+            
+            // Auto-rotate every 5 seconds
+            let autoRotate = setInterval(() => {
+                currentIndex = (currentIndex + 1) % totalCards;
+                updateCarousel();
+            }, 5000);
+            
+            // Pause auto-rotate on hover
+            const carousel = document.getElementById('gameCarousel');
+            carousel.addEventListener('mouseenter', () => clearInterval(autoRotate));
+            carousel.addEventListener('mouseleave', () => {
+                autoRotate = setInterval(() => {
+                    currentIndex = (currentIndex + 1) % totalCards;
+                    updateCarousel();
+                }, 5000);
+            });
+            
+            // Initialize
+            updateCarousel();
+        }
+        
+        // Games Preview Carousel
+        function initPreviewCarousel() {
+            const games = ['Cowboy Duel', 'Plumber Game', 'Color Lines', 'Wall Shapes'];
+            let previewIndex = 0;
+            
+            const leftBtn = document.getElementById('previewLeft');
+            const rightBtn = document.getElementById('previewRight');
+            const previews = document.querySelectorAll('.game-preview');
+            
+            if (!leftBtn || !rightBtn) return;
+            
+            function updatePreviews() {
+                previews.forEach((preview, i) => {
+                    const gameIndex = (previewIndex + i) % games.length;
+                    preview.querySelector('span').textContent = games[gameIndex];
+                    
+                    // Add slide animation
+                    preview.style.transform = 'translateX(-20px)';
+                    preview.style.opacity = '0';
+                    setTimeout(() => {
+                        preview.style.transform = 'translateX(0)';
+                        preview.style.opacity = '1';
+                    }, 50 * i);
+                });
+            }
+            
+            leftBtn.addEventListener('click', () => {
+                previewIndex = (previewIndex - 1 + games.length) % games.length;
+                updatePreviews();
+            });
+            
+            rightBtn.addEventListener('click', () => {
+                previewIndex = (previewIndex + 1) % games.length;
+                updatePreviews();
+            });
+        }
+    </script>
 </body>
 </html>
