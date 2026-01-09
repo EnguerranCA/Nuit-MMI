@@ -115,6 +115,9 @@ class GameManager {
             const { CowboyDuelGame } = await import('./games/cow-boy/CowboyDuelGame.js');
             this.registerGame('cow-boy', CowboyDuelGame);
             
+            const { ColorLinesGame } = await import('./games/color-lines/ColorLinesGame.js');
+            this.registerGame('color-lines', ColorLinesGame);
+            
             console.log('✅ Mini-jeux chargés:', Object.keys(this.gamesRegistry));
         } catch (error) {
             console.error('❌ Erreur de chargement des jeux:', error);
