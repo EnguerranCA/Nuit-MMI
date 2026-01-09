@@ -76,27 +76,22 @@ export class PlumberGame extends BaseGame {
      * Tutoriel du jeu
      */
     static getTutorial() {
-        const content = TutorialSystem.generateHybridTutorial({
-            title: 'Plumber Game',
-            icon: '🔧',
-            objective: 'Plug the water leaks with your hands before the room floods!',
-            steps: [
-                'Allow webcam access',
-                'Connect your MakeyMakey to the arrow keys',
-                'Place your hand on a leak (it turns orange)',
-                'Look at the leak shape and press the right key:',
-                '⬆️ UP = Star | ⬇️ DOWN = Square',
-                '⬅️ LEFT = Triangle | ➡️ RIGHT = Circle',
-                'Don\'t let the water level reach 100%!'
-            ],
-            tip: 'Work as a team: one player places hands, the other presses keys!'
+        const content = TutorialSystem.generateCards({
+            color: '#67e8f9',
+            cards: [
+                { image: 'https://placehold.co/400x400/333/FFF?text=Aim+Hand', text: 'Use The Center Of Your Hands To Aim The Pipes' },
+                { image: 'https://placehold.co/400x400/C5965A/FFF?text=Target+Rope', text: 'Press The Good Button' },
+                { image: 'https://placehold.co/400x400/555/FFF?text=Repair+Leak', text: 'Repair The Leak' },
+                { image: 'https://placehold.co/400x400/eee/333?text=Score+200', text: 'Try To Get The Best Score' }
+            ]
         });
 
         return {
-            title: '🔧 Plumber Game',
+            title: 'Fix The Leaks',
             content: content
         };
     }
+
 
     /**
      * Initialisation du jeu

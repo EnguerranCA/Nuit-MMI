@@ -542,14 +542,18 @@ export class WallShapesGame extends BaseGame {
      * Informations du tutoriel
      */
     static getTutorial() {
-        const content = TutorialSystem.generateML5Tutorial({
-            title: 'Pose Wall',
-            objective: 'Reproduis la pose affichée sur le mur avant qu\'il n\'arrive pour passer à travers !',
-            tip: 'Assure-toi d\'avoir un bon éclairage et suffisamment de recul pour que tout ton corps soit visible.'
+        const content = TutorialSystem.generateCards({
+            color: '#fdba74',
+            cards: [
+                { image: 'https://placehold.co/400x400/333/FFF?text=Body+Shape', text: 'Use All Your Body To Match The Shape' },
+                { image: 'https://placehold.co/400x400/059669/FFF?text=Green+Shape', text: 'When It\'s Green You Are Good But Keep Posing' },
+                { image: 'https://placehold.co/400x400/111/FFF?text=Hearts+Lives', text: 'Be Careful ! It Speeds Up Over Time' },
+                { image: 'https://placehold.co/400x400/eee/333?text=Score+180', text: 'Try To Get The Best Score' }
+            ]
         });
 
         return {
-            title: 'Pose Wall',
+            title: 'Wall Shapes',
             content: content
         };
     }

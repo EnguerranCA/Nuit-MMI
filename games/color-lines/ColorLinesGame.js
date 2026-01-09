@@ -80,10 +80,13 @@ export class ColorLinesGame extends BaseGame {
      * Tutorial information
      */
     static getTutorial() {
-        const content = TutorialSystem.generateMakeyMakeyTutorial({
-            title: 'Color Lines',
-            objective: 'Use arrow keys to select a lane and HOLD the key to color the grey bars coming from the right!',
-            tip: '⬆️=Star(orange) | ➡️=Circle(green) | ⬇️=Rectangle(blue) | ⬅️=Triangle(red). Only one key active at a time!'
+        const content = TutorialSystem.generateCards({
+            color: '#ff4757',
+            cards: [
+                { image: 'https://placehold.co/400x400/333/FFF?text=Timing+Pose', text: 'Let Press The Right Button On The Good Timing' },
+                { image: 'https://placehold.co/400x400/443333/FFF?text=Rhythm+24%25', text: 'Keep The Rhythm' },
+                { image: 'https://placehold.co/400x400/eee/333?text=Score+200', text: 'Try To Get The Best Score', span: 2 }
+            ]
         });
 
         return {

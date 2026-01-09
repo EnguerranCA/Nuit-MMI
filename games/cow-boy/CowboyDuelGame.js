@@ -66,23 +66,18 @@ export class CowboyDuelGame extends BaseGame {
      * Informations du tutoriel
      */
     static getTutorial() {
-        const content = TutorialSystem.generateHybridTutorial({
-            title: 'Cowboy Duel',
-            objective: 'Draw faster than your opponent! Aim with your hand and shoot with SPACE or ARROW keys.',
-            steps: [
-                'Allow webcam access',
-                'Place your hand in front of the camera to control the crosshair',
-                'Wait for the shutters to open',
-                'When the cowboy appears, aim at him quickly',
-                'Press SPACE or an ARROW key to shoot',
-                'The gauge fills up - if it\'s full, you lose!',
-                'Each cowboy killed earns 100 points'
-            ],
-            tip: 'The more cowboys you eliminate, the less time you have to react. Stay focused!'
+        const content = TutorialSystem.generateCards({
+            color: '#8b5cf6',
+            cards: [
+                { image: 'https://placehold.co/400x400/333/FFF?text=Fingers+Gun', text: 'Make Gun With Your Fingers' },
+                { image: 'https://placehold.co/400x400/C5965A/FFF?text=Target+Opps', text: 'Target The Opps With Your Finger' },
+                { image: 'https://placehold.co/400x400/555/FFF?text=BANG!', text: 'Press Any Button To Shoot' },
+                { image: 'https://placehold.co/400x400/eee/333?text=Score', text: 'Try To Get The Best Score' }
+            ]
         });
 
         return {
-            title: 'Cowboy Duel',
+            title: 'Cowboy Reflex',
             content: content
         };
     }
