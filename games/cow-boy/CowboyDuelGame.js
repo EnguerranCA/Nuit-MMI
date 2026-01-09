@@ -466,13 +466,28 @@ export class CowboyDuelGame extends BaseGame {
      */
     drawGunOverlay(p) {
         if (this.imgGun) {
-            // Le pistolet en bas de l'écran
-            const gunWidth = p.width * 0.4;
+            // Le pistolet en bas de l'écran, suit le viseur horizontalement
+            const gunWidth = p.width * 0.2;
             const gunHeight = gunWidth * (this.imgGun.height / this.imgGun.width);
-            const gunX = (p.width - gunWidth) / 2;
+            
+            // Calculer le décalage horizontal basé sur la position du viseur
+            // Le pistolet suit légèrement le curseur (50% de l'écart depuis le centre)
+            const centerX = p.width / 2;
+            const followStrength = 0.3; // Combien le pistolet suit (0 = pas du tout, 1 = complètement)
+            const offsetX = (this.crosshair.x - centerX) * followStrength;
+            
+            // Position finale du pistolet
+            const gunX = centerX - gunWidth / 2 + offsetX;
             const gunY = p.height - gunHeight + 50; // Légèrement en dehors
             
-            p.image(this.imgGun, gunX, gunY, gunWidth, gunHeight);
+            // Légère rotation basée sur la direction
+            const rotationAngle = p.map(offsetX, -p.width * 0.3, p.width * 0.3, -0.1, 0.1);
+            
+            p.push();
+            p.translate(gunX + gunWidth / 2, gunY + gunHeight / 2);
+            p.rotate(rotationAngle);
+            p.image(this.imgGun, -gunWidth / 2, -gunHeight / 2, gunWidth, gunHeight);
+            p.pop();
         }
     }
 

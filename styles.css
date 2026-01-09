@@ -37,6 +37,7 @@
 body {
   color: var(--color-text);
   font-family: var(--font-lexend);
+  font-weight: 400;
 }
 
 /* Landing page uses bg-light-black via Tailwind class */
