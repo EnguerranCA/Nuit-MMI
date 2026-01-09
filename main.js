@@ -231,17 +231,17 @@ class GameManager {
             card.className = 'group p-3 rounded-[2rem] pb-4 shadow-lg transition-transform hover:-translate-y-1 cursor-pointer';
             card.style.backgroundColor = color;
             
-            // Images pour chaque jeu avec styles personnalisés
+            // Images pour chaque jeu
             const gameImages = {
-                'wall-shapes': { src: './assets/PersonIllustration2.png', style: 'width: 220px; height: auto;' },
-                'plumber': { src: './assets/PersonIllustration3.png', style: 'width: 250px; height: auto;' },
-                'cow-boy': { src: './assets/PersonIllustration1.png', style: 'width: 240px; height: auto;' },
-                'color-lines': { src: './assets/PersonStar.png', style: 'width: 250px; height: auto; margin-top: 20px;' }
+                'wall-shapes': './assets/PersonIllustration2.png',
+                'plumber': './assets/PersonIllustration3.png',
+                'cow-boy': './assets/PersonIllustration1.png',
+                'color-lines': './assets/PersonStar.png'
             };
-            const imgData = gameImages[gameId] || null;
+            const imgSrc = gameImages[gameId] || '';
             card.innerHTML = `
                 <div class="bg-[#F2F0E9] w-full h-40 rounded-2xl mb-3 relative overflow-hidden border-2 border-black/5 group-hover:border-black/10 transition-colors flex items-center justify-center">
-                    ${imgData ? `<img src='${imgData.src}' alt='' style='${imgData.style}' class='object-contain pointer-events-none' />` : `<span class='text-4xl opacity-50 translate-60'>🎮</span>`}
+                    ${imgSrc ? `<img src='${imgSrc}' alt='' class='absolute w-400 h-400 object-contain pointer-events-none' />` : `<span class='text-4xl opacity-50'>🎮</span>`}
                 </div>
                 <h2 class="text-black/80 font-lexend font-semibold text-lg uppercase tracking-wide ml-2">
                     ${displayName}
@@ -383,7 +383,7 @@ class GameManager {
         this.state.isSeriesMode = true; // Mode série
         
         // Séquence des mini-jeux (tous les jeux)
-        this.state.gamesSequence = ['wall-shapes', 'plumber', 'cow-boy', 'color-lines'];
+        this.state.gamesSequence = ['wall-shapes', 'plumber', 'cow-boy'];
         
         // Affichage du tutoriel
         this.showTutorial();
@@ -711,35 +711,39 @@ class GameManager {
         this.showScreen('leaderboard');
         
         const leaderboardList = document.getElementById('leaderboard-list');
-        leaderboardList.innerHTML = '<p class="text-center text-gray-500">Loading...</p>';
+        leaderboardList.innerHTML = '<div class="text-center py-8"><p class="text-black text-xl animate-pulse">Loading scores...</p></div>';
+        
+        // Row colors based on position: blue for 1st, lime for 2nd, red for 3rd, beige for 4th+
+        const getRowColors = (index) => {
+            switch(index) {
+                case 0: return 'bg-blue'; // #54D8FF
+                case 1: return 'bg-lime'; // #A3FF56
+                case 2: return 'bg-red';  // #FF3246
+                default: return 'bg-beige'; // #F2EEE5
+            }
+        };
         
         try {
             const response = await fetch(`${this.API_URL}/leaderboard?limit=20`);
             const leaderboard = await response.json();
             
             if (leaderboard.length === 0) {
-                leaderboardList.innerHTML = '<p class="text-center text-gray-500">No scores recorded yet</p>';
+                leaderboardList.innerHTML = '<div class="bg-beige rounded-[25px] px-6 py-4 text-center"><p class="text-black text-xl">No scores recorded yet</p></div>';
                 return;
             }
             
             leaderboardList.innerHTML = leaderboard.map((player, index) => `
-                <div class="flex items-center justify-between p-4 ${
-                    index === 0 ? 'bg-primary text-white' :
-                    index === 1 ? 'bg-secondary text-text border-none' :
-                    'bg-background'
-                } rounded-2xl border-2 ${
-                    index < 3 ? '' : 'border-gray-300'
-                }">
-                    <div class="flex items-center gap-4">
-                        <span class="text-3xl font-outfit font-bold">
+                <div class="flex items-center justify-between ${getRowColors(index)} rounded-[25px] px-6 md:px-10 py-3 md:py-4">
+                    <div class="flex items-center gap-6 md:gap-10">
+                        <span class="font-climate text-beige text-4xl md:text-5xl uppercase" style="${index >= 3 ? 'color: #201F1F;' : ''}">
                             ${index + 1}
                         </span>
-                        <span class="text-xl font-bold">
+                        <span class="font-lexend text-black text-2xl md:text-4xl capitalize">
                             ${player.pseudo}
                         </span>
                     </div>
-                    <span class="text-2xl font-outfit font-bold ${index < 3 ? '' : 'text-primary'}">
-                        ${player.score}
+                    <span class="font-lexend text-black text-xl md:text-3xl capitalize">
+                        ${player.score}pts
                     </span>
                 </div>
             `).join('');
@@ -756,7 +760,7 @@ class GameManager {
             
         } catch (error) {
             console.error('Error loading leaderboard:', error);
-            leaderboardList.innerHTML = '<p class="text-center text-red-600">❌ Server connection error</p>';
+            leaderboardList.innerHTML = '<div class="bg-red rounded-[25px] px-6 py-4 text-center"><p class="text-beige text-xl">❌ Server connection error</p></div>';
         }
     }
 }
