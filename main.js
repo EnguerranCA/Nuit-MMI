@@ -127,7 +127,6 @@ class GameManager {
                 x: 80,
                 y: 80,
                 scale: 0.5,
-                rotation: 45,
                 opacity: 0,
                 duration: 0.8,
                 ease: 'back.out(2)',

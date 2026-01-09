@@ -35,17 +35,36 @@ export class PlumberGame extends BaseGame {
         this.difficulty = 1;
         this.frameCounter = 0;
         this.gameEnded = false; // Flag pour éviter d'appeler end() plusieurs fois
+        this.gameStarted = false; // Le jeu a-t-il commencé (main détectée au moins une fois)
+        this.lastHandDetectedTime = 0; // Timestamp de la dernière détection de main
+        this.handGracePeriod = 2000; // 2 secondes de grâce sans main
         
         // Système de particules d'eau pour les éclaboussures
         this.waterParticles = [];
         
+        // Positions prédéfinies des trous (correspondant au background)
+        this.leakPositions = [
+            { x: 169, y: 179 }, { x: 253, y: 171 }, { x: 361, y: 167 }, { x: 474, y: 164 },
+            { x: 545, y: 163 }, { x: 650, y: 161 }, { x: 766, y: 160 }, { x: 860, y: 158 },
+            { x: 947, y: 158 }, { x: 1087, y: 160 }, { x: 1087, y: 272 }, { x: 1181, y: 287 },
+            { x: 1266, y: 293 }, { x: 1358, y: 291 }, { x: 1359, y: 449 }, { x: 1251, y: 447 },
+            { x: 1145, y: 440 }, { x: 1018, y: 437 }, { x: 942, y: 434 }, { x: 856, y: 436 },
+            { x: 812, y: 484 }, { x: 820, y: 573 }, { x: 815, y: 617 }, { x: 974, y: 619 },
+            { x: 898, y: 617 }, { x: 738, y: 624 }, { x: 650, y: 624 }, { x: 592, y: 625 },
+            { x: 556, y: 687 }, { x: 555, y: 746 }, { x: 563, y: 838 }, { x: 687, y: 752 },
+            { x: 487, y: 757 }, { x: 426, y: 760 }, { x: 345, y: 757 }, { x: 273, y: 756 },
+            { x: 449, y: 689 }, { x: 437, y: 610 }, { x: 445, y: 565 }, { x: 348, y: 572 },
+            { x: 275, y: 574 }, { x: 234, y: 574 }
+        ];
+        this.usedPositions = []; // Pour éviter les doublons
+        
         // Système de formes pour les fuites
-        // Chaque forme correspond à une touche directionnelle avec sa couleur
+        // Nouvelles associations : Haut=Étoile, Droite=Rond, Bas=Carré, Gauche=Triangle
         this.shapeTypes = {
-            'square': { key: 'ArrowUp', keyCode: 38, label: '⬆️', name: 'Carré', color: '#54D8FF', strokeColor: '#3AB8DF' },
-            'star': { key: 'ArrowDown', keyCode: 40, label: '⬇️', name: 'Étoile', color: '#FFB755', strokeColor: '#DF9735' },
-            'circle': { key: 'ArrowLeft', keyCode: 37, label: '⬅️', name: 'Cercle', color: '#A3FF56', strokeColor: '#83DF36' },
-            'triangle': { key: 'ArrowRight', keyCode: 39, label: '➡️', name: 'Triangle', color: '#FF3246', strokeColor: '#DF1226' }
+            'star': { key: 'ArrowUp', keyCode: 38, label: '⬆️', name: 'Étoile', color: '#FFB755', strokeColor: '#DF9735' },
+            'circle': { key: 'ArrowRight', keyCode: 39, label: '➡️', name: 'Cercle', color: '#A3FF56', strokeColor: '#83DF36' },
+            'square': { key: 'ArrowDown', keyCode: 40, label: '⬇️', name: 'Carré', color: '#54D8FF', strokeColor: '#3AB8DF' },
+            'triangle': { key: 'ArrowLeft', keyCode: 37, label: '⬅️', name: 'Triangle', color: '#FF3246', strokeColor: '#DF1226' }
         };
         this.shapeKeys = Object.keys(this.shapeTypes);
         
@@ -66,8 +85,8 @@ export class PlumberGame extends BaseGame {
                 'Connect your MakeyMakey to the arrow keys',
                 'Place your hand on a leak (it turns orange)',
                 'Look at the leak shape and press the right key:',
-                '⬆️ UP = Blue Square | ⬇️ DOWN = Yellow Star',
-                '⬅️ LEFT = Green Circle | ➡️ RIGHT = Red Triangle',
+                '⬆️ UP = Star | ⬇️ DOWN = Square',
+                '⬅️ LEFT = Triangle | ➡️ RIGHT = Circle',
                 'Don\'t let the water level reach 100%!'
             ],
             tip: 'Work as a team: one player places hands, the other presses keys!'
@@ -97,6 +116,16 @@ export class PlumberGame extends BaseGame {
                     this.soundMusic = p.loadSound('./sound/ost plumber.mp3');
                     this.soundDripping = p.loadSound('./sound/water-dripping.mp3');
                     this.soundFixed = p.loadSound('./sound/fixed.mp3');
+                    
+                    // Charger les images des trous
+                    this.imgTrouCarre = p.loadImage('./assets/trouCarre.png');
+                    this.imgTrouTriangle = p.loadImage('./assets/trouTriangle.png');
+                    this.imgTrouRond = p.loadImage('./assets/trouRond.png');
+                    this.imgTrouEtoile = p.loadImage('./assets/trouEtoile.png');
+                    this.imgWaterFlow = p.loadImage('./assets/waterFlow.png');
+                    
+                    // Charger l'image de fond
+                    this.imgBackground = p.loadImage('./assets/plumberBackground.jpg');
                 };
                 
                 p.setup = () => {
@@ -191,11 +220,33 @@ export class PlumberGame extends BaseGame {
         
         this.frameCounter++;
         
-        // --- FOND UNI ---
-        p.background(45, 55, 72); // Couleur gris-bleu professionnel
+        // --- FOND IMAGE ---
+        if (this.imgBackground) {
+            // Redimensionner l'image pour couvrir tout l'écran
+            const imgRatio = this.imgBackground.width / this.imgBackground.height;
+            const canvasRatio = p.width / p.height;
+            
+            let drawWidth, drawHeight, drawX, drawY;
+            
+            if (canvasRatio > imgRatio) {
+                drawWidth = p.width;
+                drawHeight = p.width / imgRatio;
+                drawX = 0;
+                drawY = (p.height - drawHeight) / 2;
+            } else {
+                drawHeight = p.height;
+                drawWidth = p.height * imgRatio;
+                drawX = (p.width - drawWidth) / 2;
+                drawY = 0;
+            }
+            
+            p.image(this.imgBackground, drawX, drawY, drawWidth, drawHeight);
+        } else {
+            p.background(45, 55, 72); // Fallback couleur gris-bleu
+        }
 
-        // Si HandPose n'est pas encore chargé ou aucune main détectée
-        if (!this.handPose || this.hands.length === 0) {
+        // Si HandPose n'est pas encore chargé
+        if (!this.handPose) {
             p.fill(255);
             p.textSize(24);
             p.textAlign(p.CENTER, p.CENTER);
@@ -210,6 +261,24 @@ export class PlumberGame extends BaseGame {
             p.strokeWeight(4);
             p.arc(p.width/2, p.height/2 + 60, 40, 40, 0, (this.frameCounter % 60) / 60 * p.TWO_PI);
             p.pop();
+            return;
+        }
+        
+        // Mettre à jour le timestamp si des mains sont détectées
+        if (this.hands.length > 0) {
+            this.lastHandDetectedTime = Date.now();
+            if (!this.gameStarted) {
+                this.gameStarted = true;
+                console.log('🎮 PlumberGame - Première main détectée, jeu démarré!');
+            }
+        }
+        
+        // Si le jeu n'a pas encore commencé (aucune main jamais détectée), attendre
+        if (!this.gameStarted && this.hands.length === 0) {
+            p.fill(255);
+            p.textSize(24);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.text("🖐️ Place your hands in front of the camera", p.width/2, p.height/2);
             return;
         }
         
@@ -285,202 +354,8 @@ export class PlumberGame extends BaseGame {
         this.drawWater(p);
 
         // --- UI (Interface) ---
-        p.fill(255);
-        p.textSize(24);
-        p.textAlign(p.LEFT);
-        p.text("Leaks fixed: " + this.score, 20, 40);
-        p.text("Level: " + this.difficulty, 20, 70);
-        
-        p.fill(this.waterLevel >= 80 ? 'red' : this.waterLevel >= 50 ? 'orange' : 'white');
-        p.text("Water level: " + Math.floor(this.waterLevel) + "%", 20, 100);
-        
+        // Barre de niveau d'eau seulement
         this.drawWaterBar(p);
-        
-        // Légende des formes et touches
-        this.drawShapeLegend(p);
-        
-        // Feedback visuel des mains
-        p.textSize(14);
-        p.textAlign(p.CENTER);
-        p.fill(this.handL && this.handL.visible ? 'lime' : '#666');
-        p.text("Left Hand: " + (this.handL && this.handL.visible ? "✓ DETECTED" : "Not detected"), 120, p.height - 20);
-        
-        p.fill(this.handR && this.handR.visible ? 'lime' : '#666');
-        p.text("Right Hand: " + (this.handR && this.handR.visible ? "✓ DETECTED" : "Not detected"), p.width - 120, p.height - 20);
-        
-        // DEBUG : Afficher la webcam et les points de la main
-        this.drawDebug(p);
-    }
-
-    /**
-     * Dessiner la légende des formes et touches
-     */
-    drawShapeLegend(p) {
-        const legendX = p.width / 2;
-        const legendY = 25;
-        const itemWidth = 130;
-        const startX = legendX - (itemWidth * 2);
-        
-        p.push();
-        
-        // Fond de la légende
-        p.fill(0, 0, 0, 150);
-        p.noStroke();
-        p.rect(startX - 20, legendY - 15, itemWidth * 4 + 40, 50, 10);
-        
-        // Titre
-        p.fill(255, 255, 0);
-        p.textAlign(p.CENTER, p.TOP);
-        p.textSize(12);
-        p.text("Place your hand on the leak + press the key:", legendX, legendY - 10);
-        
-        // Les 4 formes avec leurs touches et couleurs
-        p.textSize(14);
-        let xPos = startX;
-        
-        // Carré bleu - Haut
-        p.fill('#54D8FF');
-        p.stroke('#3AB8DF');
-        p.strokeWeight(2);
-        p.rectMode(p.CENTER);
-        p.rect(xPos + 15, legendY + 18, 20, 20);
-        p.fill(255);
-        p.noStroke();
-        p.textAlign(p.LEFT, p.CENTER);
-        p.text("⬆️ Up", xPos + 30, legendY + 18);
-        
-        xPos += itemWidth;
-        
-        // Étoile jaune - Bas
-        p.fill('#FFB755');
-        p.stroke('#DF9735');
-        p.strokeWeight(2);
-        // Dessiner petite étoile directement
-        const starX = xPos + 15;
-        const starY = legendY + 18;
-        const starOuter = 12;
-        const starInner = 5;
-        p.beginShape();
-        for (let i = 0; i < 5; i++) {
-            const outerAngle = -p.HALF_PI + i * (p.TWO_PI / 5);
-            p.vertex(starX + p.cos(outerAngle) * starOuter, starY + p.sin(outerAngle) * starOuter);
-            const innerAngle = outerAngle + (p.TWO_PI / 10);
-            p.vertex(starX + p.cos(innerAngle) * starInner, starY + p.sin(innerAngle) * starInner);
-        }
-        p.endShape(p.CLOSE);
-        p.fill(255);
-        p.noStroke();
-        p.text("⬇️ Down", xPos + 30, legendY + 18);
-        
-        xPos += itemWidth;
-        
-        // Cercle vert - Gauche
-        p.fill('#A3FF56');
-        p.stroke('#83DF36');
-        p.strokeWeight(2);
-        p.ellipse(xPos + 15, legendY + 18, 20, 20);
-        p.fill(255);
-        p.noStroke();
-        p.text("⬅️ Left", xPos + 30, legendY + 18);
-        
-        xPos += itemWidth;
-        
-        // Triangle rouge - Droite
-        p.fill('#FF3246');
-        p.stroke('#DF1226');
-        p.strokeWeight(2);
-        p.beginShape();
-        p.vertex(xPos + 15, legendY + 8);
-        p.vertex(xPos + 25, legendY + 28);
-        p.vertex(xPos + 5, legendY + 28);
-        p.endShape(p.CLOSE);
-        p.fill(255);
-        p.noStroke();
-        p.text("➡️ Right", xPos + 30, legendY + 18);
-        
-        p.pop();
-    }
-
-    /**
-     * DEBUG : Afficher la webcam et les points de la main (style CowboyDuel)
-     */
-    drawDebug(p) {
-        // Cadre de debug en haut à droite
-        const debugWidth = 240;
-        const debugHeight = 180;
-        const debugX = p.width - debugWidth - 20;
-        const debugY = 80; // Décalé pour ne pas chevaucher la légende
-        
-        // Fond semi-transparent
-        p.fill(0, 0, 0, 180);
-        p.stroke(255, 255, 0);
-        p.strokeWeight(2);
-        p.rect(debugX - 10, debugY - 10, debugWidth + 20, debugHeight + 100, 10);
-        
-        // Afficher la webcam en miroir
-        p.push();
-        p.translate(debugX + debugWidth, debugY);
-        p.scale(-1, 1);
-        p.image(this.videoCapture, 0, 0, debugWidth, debugHeight);
-        p.pop();
-        
-        // Dessiner les points de la main si détectés
-        if (this.hands.length > 0) {
-            for (let hand of this.hands) {
-                if (!hand || !hand.keypoints) continue;
-                
-                // Dessiner chaque point
-                p.push();
-                p.translate(debugX + debugWidth, debugY);
-                p.scale(-1, 1);
-                
-                for (const kp of hand.keypoints) {
-                    // Mapper les coordonnées (webcam 640x480 vers debug window)
-                    const x = p.map(kp.x, 0, 640, 0, debugWidth);
-                    const y = p.map(kp.y, 0, 480, 0, debugHeight);
-                    
-                    // Couleur selon la main
-                    if (hand.handedness === "Left") {
-                        p.fill(255, 100, 100);
-                    } else {
-                        p.fill(0, 255, 0);
-                    }
-                    p.noStroke();
-                    p.ellipse(x, y, 6, 6);
-                }
-                
-                // Highlight le centre de la paume
-                const palmCenter = this.getPalmCenter(hand.keypoints);
-                if (palmCenter) {
-                    const px = p.map(palmCenter.x, 0, 640, 0, debugWidth);
-                    const py = p.map(palmCenter.y, 0, 480, 0, debugHeight);
-                    p.noFill();
-                    p.stroke(255, 255, 0);
-                    p.strokeWeight(2);
-                    p.ellipse(px, py, 25, 25);
-                }
-                p.pop();
-            }
-        }
-        
-        // Texte d'info
-        p.fill(255);
-        p.noStroke();
-        p.textAlign(p.LEFT, p.TOP);
-        p.textSize(12);
-        p.text(`DEBUG - HandPose`, debugX, debugY + debugHeight + 5);
-        p.text(`Mains détectées: ${this.hands.length}`, debugX, debugY + debugHeight + 20);
-        
-        if (this.hands.length > 0) {
-            const palmL = this.handL && this.handL.visible ? `(${Math.round(this.handL.x)}, ${Math.round(this.handL.y)})` : "Non visible";
-            const palmR = this.handR && this.handR.visible ? `(${Math.round(this.handR.x)}, ${Math.round(this.handR.y)})` : "Non visible";
-            p.text(`Main G: ${palmL}`, debugX, debugY + debugHeight + 35);
-            p.text(`Main D: ${palmR}`, debugX, debugY + debugHeight + 50);
-        } else {
-            p.fill(255, 100, 100);
-            p.text(`Aucune main détectée!`, debugX, debugY + debugHeight + 35);
-            p.text(`Placez votre main devant la caméra`, debugX, debugY + debugHeight + 50);
-        }
     }
 
     /**
@@ -902,18 +777,36 @@ export class PlumberGame extends BaseGame {
     }
 
     /**
-     * Créer une nouvelle fuite avec animation
+     * Créer une nouvelle fuite à une position prédéfinie
      */
     createLeak(p) {
         if (!this.leaks) return;
         
+        // Trouver une position disponible
+        const availablePositions = this.leakPositions.filter((pos, index) => 
+            !this.usedPositions.includes(index)
+        );
+        
+        if (availablePositions.length === 0) {
+            // Plus de positions disponibles, réinitialiser
+            this.usedPositions = [];
+            return;
+        }
+        
+        // Choisir une position aléatoire parmi les disponibles
+        const randomIndex = Math.floor(Math.random() * availablePositions.length);
+        const position = availablePositions[randomIndex];
+        const originalIndex = this.leakPositions.indexOf(position);
+        this.usedPositions.push(originalIndex);
+        
         let leak = new this.leaks.Sprite();
-        leak.x = p.random(80, p.width - 80);
-        leak.y = p.random(80, p.height - 80);
+        leak.x = position.x;
+        leak.y = position.y;
         leak.d = 70;
         leak.text = ""; // Pas d'emoji, on dessine manuellement
         leak.color = p.color(0, 0, 0, 0); // Transparent - on dessine nous-même
         leak.stroke = p.color(0, 0, 0, 0); // Pas de bordure
+        leak.positionIndex = originalIndex; // Sauvegarder l'index pour libérer la position
         
         // Propriétés personnalisées pour l'animation
         leak.animPhase = p.random(p.TWO_PI); // Phase aléatoire pour décalage animation
@@ -957,70 +850,43 @@ export class PlumberGame extends BaseGame {
     }
 
     /**
-     * Dessiner la forme de fuite (carré, étoile, cercle, triangle) avec couleurs
+     * Dessiner la forme de fuite avec image (carré, étoile, cercle, triangle)
      */
     drawLeakShape(p, leak, isBlocked) {
         const x = leak.x;
         const y = leak.y;
         const shapeInfo = this.shapeTypes[leak.shapeType];
-        const size = 60;
+        const size = 120; // Taille de l'image (80 * 1.5)
         
         p.push();
+        p.imageMode(p.CENTER);
         
-        // Couleur de la forme - utiliser la couleur définie ou orange si main dessus
-        if (isBlocked) {
-            p.fill(255, 200, 100); // Orange quand main dessus
-            p.stroke(255, 150, 50);
-        } else {
-            p.fill(shapeInfo.color);
-            p.stroke(shapeInfo.strokeColor);
-        }
-        p.strokeWeight(4);
-        
-        // Dessiner selon le type de forme
+        // Sélectionner l'image selon le type de forme
+        let img;
         switch (leak.shapeType) {
-            case 'square': // Carré bleu - Flèche Haut
-                p.rectMode(p.CENTER);
-                p.rect(x, y, size, size);
+            case 'square':
+                img = this.imgTrouCarre;
                 break;
-                
-            case 'star': // Étoile jaune 5 branches - Flèche Bas
-                // Dessiner une étoile à 5 branches directement avec vertex
-                const outerRadius = size * 0.5;
-                const innerRadius = size * 0.2;
-                const points = 5;
-                const angleStep = p.TWO_PI / points;
-                const halfAngle = angleStep / 2;
-                
-                p.beginShape();
-                for (let i = 0; i < points; i++) {
-                    // Point externe (pointe de l'étoile)
-                    const outerAngle = -p.HALF_PI + i * angleStep;
-                    p.vertex(x + p.cos(outerAngle) * outerRadius, y + p.sin(outerAngle) * outerRadius);
-                    // Point interne (creux de l'étoile)
-                    const innerAngle = outerAngle + halfAngle;
-                    p.vertex(x + p.cos(innerAngle) * innerRadius, y + p.sin(innerAngle) * innerRadius);
-                }
-                p.endShape(p.CLOSE);
+            case 'star':
+                img = this.imgTrouEtoile;
                 break;
-                
-            case 'circle': // Cercle vert - Flèche Gauche
-                p.ellipse(x, y, size, size);
+            case 'circle':
+                img = this.imgTrouRond;
                 break;
-                
-            case 'triangle': // Triangle rouge - Flèche Droite
-                p.beginShape();
-                p.vertex(x, y - size/2);
-                p.vertex(x + size/2, y + size/2);
-                p.vertex(x - size/2, y + size/2);
-                p.endShape(p.CLOSE);
+            case 'triangle':
+                img = this.imgTrouTriangle;
                 break;
         }
         
-        // Trou central (d'où sort l'eau)
-        p.fill(20, 50, 80);
-        p.noStroke();
-        p.ellipse(x, y, 20, 20);
+        // Dessiner l'image du trou
+        if (img) {
+            // Si main dessus, teinter en orange
+            if (isBlocked) {
+                p.tint(255, 200, 100);
+            }
+            p.image(img, x, y, size, size);
+            p.noTint();
+        }
         
         // Afficher l'icône de touche quand main dessus
         if (isBlocked) {
@@ -1036,42 +902,35 @@ export class PlumberGame extends BaseGame {
     }
 
     /**
-     * Dessiner le jet d'eau animé qui descend jusqu'en bas de l'écran
+     * Dessiner le jet d'eau avec l'image waterFlow répétée verticalement
      */
     drawWaterJet(p, x, y, phase, angle, intensity) {
+        if (!this.imgWaterFlow) return;
+        
         p.push();
+        p.imageMode(p.CENTER);
         
-        const time = this.frameCounter * 0.15 + phase;
-        const startY = y + 15; // Démarrer sous la forme
+        const startY = y + 270; // Démarrer au bas du trou (taille 120px, donc y + 60)
         const endY = p.height; // Jusqu'en bas de l'écran
-        const jetLength = endY - startY;
         
-        // Dessiner plusieurs lignes d'eau ondulantes
-        for (let i = 0; i < 5; i++) {
-            const offsetX = (i - 2) * 3;
-            
-            // Gradient de bleu - plus opaque en haut
-            p.noFill();
-            
-            // Courbe d'eau
-            p.beginShape();
-            for (let j = 0; j <= jetLength; j += 8) {
-                const progress = j / jetLength;
-                const waveAmplitude = 5 + progress * 15; // Onde plus grande en bas
-                const waveOffset = Math.sin(time * 2 + j * 0.02 + i) * waveAmplitude * intensity;
-                
-                // Gradient d'opacité et couleur
-                const alpha = p.map(progress, 0, 1, 200, 80) * intensity;
-                p.stroke(100 + i * 20, 180 + i * 15, 255, alpha);
-                p.strokeWeight(p.map(progress, 0, 1, 6 - i, 2));
-                
-                p.vertex(x + offsetX + waveOffset + angle * 20, startY + j);
-            }
-            p.endShape();
+        // Taille de l'image waterFlow
+        const waterFlowWidth = 50 * intensity;
+        const waterFlowHeight = 500;
+        
+        // Opacité selon l'intensité (main dessus = moins d'eau)
+        const alpha = 255 * intensity;
+        p.tint(255, 255, 255, alpha);
+        
+        // Répéter l'image verticalement sans animation
+        for (let posY = startY; posY < endY; posY += waterFlowHeight * 0.8) {
+            p.image(this.imgWaterFlow, x, posY, waterFlowWidth, waterFlowHeight);
         }
+        
+        p.noTint();
         
         // Éclaboussures en bas
         if (intensity > 0.5) {
+            const time = this.frameCounter * 0.15 + phase;
             this.drawSplashAtBottom(p, x, endY - 10, time, intensity);
         }
         
@@ -1167,6 +1026,14 @@ export class PlumberGame extends BaseGame {
         if (this.soundFixed) {
             this.soundFixed.setVolume(0.6);
             this.soundFixed.play();
+        }
+        
+        // Libérer la position pour pouvoir y remettre un trou plus tard
+        if (leak.positionIndex !== undefined) {
+            const posIdx = this.usedPositions.indexOf(leak.positionIndex);
+            if (posIdx !== -1) {
+                this.usedPositions.splice(posIdx, 1);
+            }
         }
         
         leak.remove();
